@@ -45,8 +45,8 @@
       peer = new SimplePeer({ trickle: false, initiator: false });
 
       peer.on('signal', data => {
-        const signalData = JSON.stringify(data);
-        navigator.clipboard.writeText(signalData).then(() => {
+        const signalData = btoa(JSON.stringify(data));
+        navigator.clipboard.writeText(`janus://calling-from/${signalData}`).then(() => {
           console.log('Signal data copied to clipboard.');
           alert(alertBoxMessage);
           window.open(issueUrl, '_blank');

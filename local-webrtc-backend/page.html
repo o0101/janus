@@ -84,9 +84,10 @@
     async function pollGitHubAPI(repoUrl, accessToken) {
       repoUrl = new URL(repoUrl.replace(/\/$/, '')).href;
       let lastChecked = new Date().toISOString();
+      let processedIssues = new Set(); // Set to keep track of processed issues
 
       setInterval(async () => {
-        const response = await fetch(`https://api.github.com/repos/${username}/${repoName}/issues?since=${lastChecked}`, {
+        const response = await fetch(`https://api.github.com/repos/${username}/${repoName}/issues?since=${lastChecked}&state=open`, {
           headers: {
             'Authorization': `token ${accessToken}`,
             'Accept': 'application/vnd.github.v3+json'
@@ -96,20 +97,83 @@
 
         if (issues.length > 0) {
           console.log('New issues:', issues.map(issue => `#${issue.number}`));
-          issues.forEach(async issue => {
-            const ghUsername = issue.user.login; // Extract GitHub username
-            // check for comments first
-            const postComment = createCommentPoster(issue.number, repoUrl, accessToken, ghUsername);
-            await beginConnectionProcess(postComment, ghUsername); // Pass the username to your connection process
-            await sleep(200);
-            lastChecked = new Date().toISOString();
-            const issueLastChecked = lastChecked;
+          for (const issue of issues) {
+            if (processedIssues.has(issue.number)) {
+              continue; // Skip already processed issues
+            }
 
-          });
+            const ghUsername = issue.user.login; // Extract GitHub username
+            const commentsResponse = await fetch(issue.comments_url, {
+              headers: {
+                'Authorization': `token ${accessToken}`,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+            const comments = await commentsResponse.json();
+            const webrtcResponseComment = comments.find(comment => isResponseComment(comment));
+
+            if (webrtcResponseComment) {
+              processResponseComment(webrtcResponseComment, ghUsername);
+              closeIssue(issue.number, repoUrl, accessToken); // Close the issue after processing the comment
+            } else {
+              const postComment = createCommentPoster(issue.number, repoUrl, accessToken, ghUsername);
+              await beginConnectionProcess(postComment, ghUsername); // Open new connection
+            }
+
+            processedIssues.add(issue.number);
+            await sleep(200);
+          }
           lastChecked = new Date().toISOString();
         }
+      }, 15051);
+    }
 
-      }, 15051); // Poll every quarter minute approximately
+    function isResponseComment(comment) {
+      // Determine if the comment is a WebRTC response
+      return comment.body.startsWith('janus://calling-from/');
+    }
+
+    function processResponseComment(comment, ghUsername) {
+      const signalData = extractSignalDataFromComment(comment.body);
+      const peer = clients[ghUsername];
+      if (peer) {
+        peer.signal(signalData);
+      } else {
+        console.error('No peer connection found for username:', ghUsername);
+      }
+    }
+
+    function extractSignalDataFromComment(commentBody) {
+      // Assuming the signaling data is JSON encoded within the comment body
+      const signalDataString = commentBody.replace('janus://calling-from/', '').trim();
+      return JSON.parse(atob(signalDataString));
+    }
+
+    async function closeIssue(issueNumber, repoUrl, accessToken) {
+      const closeIssueUrl = `https://api.github.com/repos/${username}/${repoName}/issues/${issueNumber}`;
+      const body = {
+        state: 'closed'
+      };
+
+      try {
+        const response = await fetch(closeIssueUrl, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `token ${accessToken}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+          console.error('Failed to close issue:', await response.text());
+        } else {
+          console.log(`Issue #${issueNumber} closed successfully.`);
+        }
+      } catch (error) {
+        console.error('Error closing issue:', error);
+      }
     }
 
     function createCommentPoster(issueNumber, repoUrl, accessToken) {
@@ -128,7 +192,7 @@
     }
 
     async function postCommentToIssue(issueNumber, commentUrl, repoUrl, accessToken) {
-      const markdownLink = `[Connect via Janus](${commentUrl})`;
+      const markdownLink = `[janus://dials/${username}](${commentUrl})`;
       try {
         const commentResponse = await fetch(`https://api.github.com/repos/${username}/${repoName}/issues/${issueNumber}/comments`, {
           method: 'POST',
