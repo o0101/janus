@@ -30,15 +30,29 @@
   </div>
 
   <script>
+    
+  </script>
+
+  <script>
     const urlParams = new URL(location).searchParams;
     const signalData = urlParams.get('data');
+    const issueUrl = urlParams.get('issue');
+    const alertBoxMessage = `Connection Ready: The connection data has been copied to your clipboard.\nPlease go to the GitHub issue page (opening now) and paste this data into a comment. Do not close this page - it keeps the connection active.\nPaste the data in a GitHub comment to complete the blog/chat setup.`
     let peer;
 
     if (signalData) {
+      // idea could we use email via mailto links as a signalling channel? :)
       peer = new SimplePeer({ trickle: false, initiator: false });
 
       peer.on('signal', data => {
-        console.log('Signal data:', JSON.stringify(data));
+        const signalData = JSON.stringify(data);
+        navigator.clipboard.writeText(signalData).then(() => {
+          console.log('Signal data copied to clipboard.');
+          alert(alertBoxMessage);
+          window.open(issueUrl, '_blank');
+        }).catch(err => {
+          console.error('Could not copy signal data to clipboard:', err);
+        });
       });
 
       peer.on('connect', () => {

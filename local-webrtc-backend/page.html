@@ -116,10 +116,11 @@
       };
     }
 
-    function formatStaticSiteUrl(repoUrl, signalData) {
+    function formatStaticSiteUrl(repoUrl, signalData, issueUrl) {
       const [ userName, repoName ] = new URL(repoUrl).pathname.split('/').filter(part => part.length);
       const encodedSignalData = encodeURIComponent(JSON.stringify(signalData));
-      return `https://${userName}.github.io/${repoName}?data=${encodedSignalData}`;
+      const encodedIssueUrl = encodeURIComponent(issueUrl);
+      return `https://${userName}.github.io/${repoName}?data=${encodedSignalData}&issue=${encodedIssueUrl}`;
     }
 
     async function postCommentToIssue(issueNumber, commentUrl, repoUrl, accessToken) {
