@@ -4,11 +4,25 @@
   <meta charset="UTF-8">
   <title>WebRTC Client Page</title>
   <script src="https://cdn.jsdelivr.net/npm/simple-peer@9/simplepeer.min.js"></script>
+  <style>
+    #blog, #chat {
+      max-width: 600px;
+      margin: 20px auto;
+      font-family: Arial, sans-serif;
+    }
+    #chat-window {
+      width: 100%;
+      height: 200px;
+      background-color: #f0f0f0;
+    }
+    #chat-input {
+      width: calc(100% - 60px);
+    }
+  </style>
 </head>
 <body>
   <h1>WebRTC Client</h1>
-  <iframe id="blog-iframe"></iframe>
-  <section id="blog"></section>
+  <section id="blog"></section> <!-- Blog content will be inserted here -->
   <div id="chat">
     <textarea id="chat-window" readonly></textarea>
     <input type="text" id="chat-input" placeholder="Type your message...">
@@ -23,7 +37,6 @@
       const peer = new SimplePeer();
 
       peer.on('signal', data => {
-        // Handle the signal data. Typically, this would be sent back to the server.
         console.log('Signal data:', JSON.stringify(data));
       });
 
@@ -34,14 +47,16 @@
 
       peer.on('data', data => {
         console.log('Received message:', data.toString());
-        // Here you can handle incoming data.
         try {
-        const message = JSON.parse(data.toString());
-        if (message.type === 'blog') {
-          document.getElementById('blog-iframe').srcdoc = message.content;
-        }
+          const message = JSON.parse(data.toString());
+          if (message.type === 'blog') {
+            document.getElementById('blog').innerHTML = message.content;
+          } else if (message.type === 'chat') {
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.value += `${message.handle}: ${message.msg}\n`;
+          }
         } catch(e) {
-        console.warn(`Could not parse message (only showing first 140 chars)`, e, message.slice(0, 140));
+          console.warn(`Could not parse message:`, e, data.toString().slice(0, 140));
         }
       });
 
@@ -59,6 +74,15 @@
     } else {
       console.error('No signaling data found in URL.');
     }
+
+    document.getElementById('send-button').addEventListener('click', () => {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim().substring(0, 140); // Limit to 140 chars
+      if (message) {
+        peer.send(JSON.stringify({ type: 'chat', msg: message }));
+        input.value = '';
+      }
+    });
   </script>
 </body>
 </html>
