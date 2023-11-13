@@ -123,14 +123,15 @@
     }
 
     async function postCommentToIssue(issueNumber, commentUrl, repoUrl, accessToken) {
-      const commentResponse = await fetch(`https://api.github.com/repos/${username}/${repoName}/issues/${issueNumber}/comments`, {
+      const markdownLink = `[Connect via Janus](${commentUrl})`;
+      const commentResponse = await fetch(`${repoUrl}/issues/${issueNumber}/comments`, {
         method: 'POST',
         headers: {
           'Authorization': `token ${accessToken}`,
           'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ body: `Here's your connection link: ${commentUrl}` })
+        body: JSON.stringify({ body: markdownLink })
       });
 
       if (!commentResponse.ok) {
