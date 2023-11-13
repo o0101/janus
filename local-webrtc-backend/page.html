@@ -98,10 +98,13 @@
           console.log('New issues:', issues.map(issue => `#${issue.number}`));
           issues.forEach(async issue => {
             const ghUsername = issue.user.login; // Extract GitHub username
+            // check for comments first
             const postComment = createCommentPoster(issue.number, repoUrl, accessToken, ghUsername);
             await beginConnectionProcess(postComment, ghUsername); // Pass the username to your connection process
-            await sleep(1000);
+            await sleep(200);
             lastChecked = new Date().toISOString();
+            const issueLastChecked = lastChecked;
+
           });
           lastChecked = new Date().toISOString();
         }
@@ -111,7 +114,8 @@
 
     function createCommentPoster(issueNumber, repoUrl, accessToken) {
       return async (signalData) => {
-        const staticSiteUrl = formatStaticSiteUrl(repoUrl, signalData);
+        const staticSiteUrl = formatStaticSiteUrl(repoUrl, signalData, `${repoUrl}/issues/${issueNumber}`);
+        console.log({staticSiteUrl});
         await postCommentToIssue(issueNumber, staticSiteUrl, repoUrl, accessToken);
       };
     }
@@ -125,20 +129,24 @@
 
     async function postCommentToIssue(issueNumber, commentUrl, repoUrl, accessToken) {
       const markdownLink = `[Connect via Janus](${commentUrl})`;
-      const commentResponse = await fetch(`${repoUrl}/issues/${issueNumber}/comments`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `token ${accessToken}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ body: markdownLink })
-      });
+      try {
+        const commentResponse = await fetch(`https://api.github.com/repos/${username}/${repoName}/issues/${issueNumber}/comments`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `token ${accessToken}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ body: markdownLink })
+        });
 
-      if (!commentResponse.ok) {
-        console.error('Failed to post comment:', await commentResponse.text());
-      } else {
-        console.log('Comment posted successfully.');
+        if (!commentResponse.ok) {
+          console.error('Failed to post comment:', await commentResponse.text());
+        } else {
+          console.log('Comment posted successfully.');
+        }
+      } catch(e) {
+        console.warn(`Error posting comment`, e);
       }
     }
 
