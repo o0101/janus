@@ -34,6 +34,7 @@
   </script>
 
   <script>
+    const Decoder = new TextDecoder('utf-8');
     const urlParams = new URL(location).searchParams;
     const signalData = urlParams.get('data');
     const issueUrl = urlParams.get('issue');
@@ -61,9 +62,10 @@
       });
 
       peer.on('data', data => {
+        data = data.toString();
         console.log('Received message:', data);
         try {
-          const message = data;
+          const message = JSON.parse(data);
           if (message.type === 'blog') {
             document.getElementById('blog').innerHTML = message.content;
           } else if (message.type === 'chat') {

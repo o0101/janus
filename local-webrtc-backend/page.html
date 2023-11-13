@@ -66,7 +66,7 @@
     window.sendMessageToClient = (ghUsername, message) => {
       const peer = clients[ghUsername];
       if (peer) {
-        peer.send({type: 'chat', msg: message, handle: ghUsername});
+        peer.send(JSON.stringify({type: 'chat', msg: message, handle: username}));
       } else {
         console.error('Client not found:', ghUsername);
       }
@@ -135,13 +135,18 @@
       return comment.body.startsWith('janus://building_p2p_link/');
     }
 
-    function processResponseComment(comment, ghUsername) {
+    function processResponseComment(comment, expectedUsername) {
+      if (comment.user.login !== expectedUsername) {
+        console.error(`Response from unexpected user: ${comment.user.login}. Expected: ${expectedUsername}`);
+        return; // Stop processing if the user is not the one expected
+      }
+
       const signalData = extractSignalDataFromComment(comment.body);
-      const peer = clients[ghUsername];
+      const peer = clients[expectedUsername];
       if (peer) {
         peer.signal(signalData);
       } else {
-        console.error('No peer connection found for username:', ghUsername);
+        console.error('No peer connection found for username:', expectedUsername);
       }
     }
 
@@ -181,7 +186,6 @@
     function createCommentPoster(issueNumber, repoUrl, accessToken, ghUsername) {
       return async (signalData) => {
         const staticSiteUrl = formatStaticSiteUrl(repoUrl, signalData, `${repoUrl}/issues/${issueNumber}`);
-        console.log({staticSiteUrl});
         await postCommentToIssue(issueNumber, staticSiteUrl, repoUrl, accessToken, ghUsername);
       };
     }
@@ -194,7 +198,7 @@
     }
 
     async function postCommentToIssue(issueNumber, commentUrl, repoUrl, accessToken, ghUsername) {
-      const markdownLink = `Hey @${ghUsername}! I'm available to chat. Click this link to start: [janus://click_to_dial/${username}](${commentUrl})`;
+      const markdownLink = `Hey @${ghUsername}! I'm available to chat. Click this link to start: [janus://click_to_dial/${username}](${commentUrl})\nThen paste your p2p locator below.`;
       try {
         const commentResponse = await fetch(`https://api.github.com/repos/${username}/${repoName}/issues/${issueNumber}/comments`, {
           method: 'POST',
@@ -244,8 +248,8 @@
         peer.on('connect', () => {
           console.log('New client connected!', ghUsername);
           dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
-          dataChannel.send({type: 'chat', msg: `Hello ${ghUsername} from the WebRTC "server"!`});
-          dataChannel.send({type: 'blog', content: document.querySelector('section#blog').outerHTML });
+          dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello ${ghUsername} from the WebRTC "server"!`}));
+          dataChannel.send(JSON.stringify({type: 'blog', content: document.querySelector('section#blog').outerHTML }));
         });
 
         // Receiving messages on the data channel
@@ -254,7 +258,7 @@
             const message = JSON.parse(data.toString());
             if (message.type === 'chat') {
               // Format the chat message for better readability in the console
-              console.log(`CHAT_MSG [${message.ghUsername}]: ${message.msg}`);
+              console.log(`CHAT_MSG [${ghUsername}]: ${message.msg}`);
             } else {
               // For other types of messages, log them as is
               console.log('Received message:', message);
