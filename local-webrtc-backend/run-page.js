@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+console.warn(`Remember to ALLOW POP UPS, by throwing window open inside user gesture! (modal close)`);
 const os = require('os');
 const fs = require('fs').promises;
 const path = require('path');

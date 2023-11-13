@@ -46,7 +46,7 @@
 
       peer.on('signal', data => {
         const signalData = btoa(JSON.stringify(data));
-        navigator.clipboard.writeText(`janus://calling_from/${signalData}`).then(() => {
+        navigator.clipboard.writeText(`janus://building_p2p_link/${signalData}`).then(() => {
           console.log('Signal data copied to clipboard.');
           alert(alertBoxMessage);
           window.open(issueUrl, '_blank');

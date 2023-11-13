@@ -106,6 +106,7 @@
               }
             });
             const comments = await commentsResponse.json();
+            console.log(comments);
             const webrtcResponseComment = comments.find(comment => isResponseComment(comment));
 
             if (webrtcResponseComment) {
@@ -127,7 +128,8 @@
 
     function isResponseComment(comment) {
       // Determine if the comment is a WebRTC response
-      return comment.body.startsWith('janus://calling_from/');
+      console.log(comment);
+      return comment.body.startsWith('janus://building_p2p_link/');
     }
 
     function processResponseComment(comment, ghUsername) {
@@ -142,7 +144,7 @@
 
     function extractSignalDataFromComment(commentBody) {
       // Assuming the signaling data is JSON encoded within the comment body
-      const signalDataString = commentBody.replace('janus://calling_from/', '').trim();
+      const signalDataString = commentBody.replace('janus://building_p2p_link/', '').trim();
       return JSON.parse(atob(signalDataString));
     }
 
@@ -173,11 +175,11 @@
       }
     }
 
-    function createCommentPoster(issueNumber, repoUrl, accessToken) {
+    function createCommentPoster(issueNumber, repoUrl, accessToken, ghUsername) {
       return async (signalData) => {
         const staticSiteUrl = formatStaticSiteUrl(repoUrl, signalData, `${repoUrl}/issues/${issueNumber}`);
         console.log({staticSiteUrl});
-        await postCommentToIssue(issueNumber, staticSiteUrl, repoUrl, accessToken);
+        await postCommentToIssue(issueNumber, staticSiteUrl, repoUrl, accessToken, ghUsername);
       };
     }
 
@@ -188,8 +190,8 @@
       return `https://${userName}.github.io/${repoName}?data=${encodedSignalData}&issue=${encodedIssueUrl}`;
     }
 
-    async function postCommentToIssue(issueNumber, commentUrl, repoUrl, accessToken) {
-      const markdownLink = `[janus://dialing/${username}](${commentUrl})`;
+    async function postCommentToIssue(issueNumber, commentUrl, repoUrl, accessToken, ghUsername) {
+      const markdownLink = `Hey @${ghUsername}! I'm available to chat. Click this link to start: [janus://click_to_dial/${username}](${commentUrl})`;
       try {
         const commentResponse = await fetch(`https://api.github.com/repos/${username}/${repoName}/issues/${issueNumber}/comments`, {
           method: 'POST',
