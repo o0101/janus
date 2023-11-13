@@ -61,9 +61,9 @@
       });
 
       peer.on('data', data => {
-        console.log('Received message:', data.toString());
+        console.log('Received message:', data);
         try {
-          const message = JSON.parse(data.toString());
+          const message = data;
           if (message.type === 'blog') {
             document.getElementById('blog').innerHTML = message.content;
           } else if (message.type === 'chat') {
@@ -71,7 +71,7 @@
             chatWindow.value += `${message.handle}: ${message.msg}\n`;
           }
         } catch(e) {
-          console.warn(`Could not parse message:`, e, data.toString().slice(0, 140));
+          console.warn(`Could not parse message:`, e, JSON.stringify(data).slice(0, 140));
         }
       });
 
