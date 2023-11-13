@@ -57,9 +57,10 @@
     const ghCreds = JSON.parse(decodeURIComponent(urlParams.get('ghCreds')));
     const ghAccessToken = ghCreds.GH_ACCESS_TOKEN;
     const repoUrl = ghCreds.REPO_URL;
-
+    const DEBUG = {
+      verbose: false,
+    };
     const [ username, repoName ] = new URL(repoUrl).pathname.split('/').filter(part => part.length);
-
     let clients = {}; // Map to hold ghUsername to peer mapping
 
     // Function to send message to a specific client
@@ -74,10 +75,11 @@
 
     window.ghAccessToken = ghAccessToken;
     window.repoUrl = repoUrl;
+
     if (!ghAccessToken) {
       console.error('GitHub access token not found!');
     } else {
-      console.log('GitHub access token retrieved.');
+      DEBUG.verbose && console.log('GitHub access token retrieved.');
       pollGitHubAPI(repoUrl, ghAccessToken);
     }
 
@@ -94,9 +96,10 @@
           }
         });
         const issues = await response.json();
+        lastChecked = new Date().toISOString();
 
         if (issues.length > 0) {
-          console.log('Updated issues:', issues.map(issue => `#${issue.number}`));
+          DEBUG.verbose && console.log('Updated issues:', issues.map(issue => `#${issue.number}`));
           for (const issue of issues) {
             const ghUsername = issue.user.login; // Extract GitHub username
             const commentsResponse = await fetch(issue.comments_url, {
@@ -110,12 +113,12 @@
             const ownComment = comments.find(comment => comment.user.login === username && comment.body.includes('janus://click_to_dial'));
 
             if (webrtcResponseComment) {
-              console.log('found webrtc response comment', webrtcResponseComment);
-              processResponseComment(webrtcResponseComment, ghUsername);
+              DEBUG.verbose && console.log('found webrtc response comment', webrtcResponseComment);
+              await processResponseComment(webrtcResponseComment, ghUsername);
               closeIssue(issue.number, repoUrl, accessToken); // Close the issue after processing the comment
               processedIssues.add(issue.number);
             } else if (ownComment) {
-              console.log(`Already responded to issue #${issue.number}.`);
+              DEBUG.verbose && console.log(`Already responded to issue #${issue.number}.`);
               continue; // Skip this issue as we've already posted a comment
             } else {
               const postComment = createCommentPoster(issue.number, repoUrl, accessToken, ghUsername);
@@ -124,15 +127,13 @@
 
             await sleep(200);
           }
-          lastChecked = new Date().toISOString();
         }
       }, 15051);
     }
 
     function isResponseComment(comment) {
       // Determine if the comment is a WebRTC response
-      console.log(comment);
-      return comment.body.startsWith('janus://building_p2p_link/');
+      return comment.body.startsWith('janus://p2p_locator/');
     }
 
     function processResponseComment(comment, expectedUsername) {
@@ -151,8 +152,7 @@
     }
 
     function extractSignalDataFromComment(commentBody) {
-      // Assuming the signaling data is JSON encoded within the comment body
-      const signalDataString = commentBody.replace('janus://building_p2p_link/', '').trim();
+      const signalDataString = commentBody.replace('janus://p2p_locator/', '').trim();
       return JSON.parse(atob(signalDataString));
     }
 
@@ -176,7 +176,7 @@
         if (!response.ok) {
           console.error('Failed to close issue:', await response.text());
         } else {
-          console.log(`Issue #${issueNumber} closed successfully.`);
+          DEBUG.verbose && console.log(`Issue #${issueNumber} closed successfully.`);
         }
       } catch (error) {
         console.error('Error closing issue:', error);
@@ -213,7 +213,7 @@
         if (!commentResponse.ok) {
           console.error('Failed to post comment:', await commentResponse.text());
         } else {
-          console.log('Comment posted successfully.');
+          DEBUG.verbose && console.log('Comment posted successfully.');
         }
       } catch(e) {
         console.warn(`Error posting comment`, e);
@@ -239,7 +239,7 @@
 
         // When the peer generates a signaling data (offer), log it
         peer.on('signal', data => {
-          console.log('Signal data:', JSON.stringify(data));
+          DEBUG.verbose && console.log('Signal data:', JSON.stringify(data));
           // Send this data back to your server or GitHub as needed
           postComment(data).then(resolve);
         });
@@ -261,7 +261,7 @@
               console.log(`CHAT_MSG [${ghUsername}]: ${message.msg}`);
             } else {
               // For other types of messages, log them as is
-              console.log('Received message:', message);
+              DEBUG.verbose && console.log('Received message:', message);
             }
           } catch (e) {
             console.error('Error parsing received message:', e);
