@@ -58,14 +58,29 @@
     const ghAccessToken = ghCreds.GH_ACCESS_TOKEN;
     const repoUrl = ghCreds.REPO_URL;
 
+    const [ username ] = new URL(repoUrl).pathname.split('/').filter(part => part.length);
+
+    let clients = {}; // Map to hold ghUsername to peer mapping
+
+    // Function to send message to a specific client
+    window.sendMessageToClient = (ghUsername, message) => {
+      const peer = clients[ghUsername];
+      if (peer) {
+        peer.send({type: 'chat', msg: message, handle: username});
+      } else {
+        console.error('Client not found:', ghUsername);
+      }
+    };
+
+    window.ghAccessToken = ghAccessToken;
+    window.repoUrl = repoUrl;
     if (!ghAccessToken) {
       console.error('GitHub access token not found!');
     } else {
       console.log('GitHub access token retrieved.');
       pollGitHubAPI(repoUrl, ghAccessToken);
     }
-  </script>
-  <script>
+
     async function pollGitHubAPI(repoUrl, accessToken) {
       repoUrl = new URL(repoUrl.replace(/\/$/, '')).href;
       let lastChecked = new Date().toISOString();
@@ -82,13 +97,14 @@
         if (issues.length > 0) {
           console.log('New issues:', issues);
           issues.forEach(issue => {
-            const postComment = createCommentPoster(issue.number, repoUrl, accessToken);
-            beginConnectionProcess(postComment);
+            const ghUsername = issue.user.login; // Extract GitHub username
+            const postComment = createCommentPoster(issue.number, repoUrl, accessToken, ghUsername);
+            beginConnectionProcess(postComment, ghUsername); // Pass the username to your connection process
           });
         }
 
         lastChecked = new Date().toISOString();
-      }, 60000); // Poll every minute
+      }, 15051); // Poll every quarter minute approximately
     }
 
     function createCommentPoster(issueNumber, repoUrl, accessToken) {
@@ -122,9 +138,10 @@
       }
     }
 
-    function beginConnectionProcess(postComment) {
+    function beginConnectionProcess(postComment, ghUsername) {
       // Create a new peer as the initiator
       const peer = new SimplePeer({ initiator: true, trickle: false });
+      clients[ghUsername] = peer;
 
       let dataChannel;
 
@@ -137,15 +154,26 @@
 
       // When peer connection is established
       peer.on('connect', () => {
-        console.log('New client connected!');
+        console.log('New client connected!', ghUsername);
         dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
-        dataChannel.send({type: 'chat', msg: 'Hello from the WebRTC "server"!'});
+        dataChannel.send({type: 'chat', msg: `Hello ${ghUsername} from the WebRTC "server"!`});
         dataChannel.send({type: 'blog', content: document.querySelector('section#blog').outerHTML });
       });
 
       // Receiving messages on the data channel
       peer.on('data', data => {
-        console.log('Received message from client:', data.toString());
+        try {
+          const message = JSON.parse(data.toString());
+          if (message.type === 'chat') {
+            // Format the chat message for better readability in the console
+            console.log(`CHAT_MSG [${message.ghUsername}]: ${message.msg}`);
+          } else {
+            // For other types of messages, log them as is
+            console.log('Received message:', message);
+          }
+        } catch (e) {
+          console.error('Error parsing received message:', e);
+        }
       });
 
       // Handling errors

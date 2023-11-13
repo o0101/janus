@@ -31,7 +31,16 @@ const rl = readline.createInterface({
   const page = await browser.newPage();
 
   page.on('console', message => {
-    console.log('PAGE LOG:', message.text());
+    const text = message.text();
+    if (text.startsWith('CHAT_MSG')) {
+      // Extracts the username and message from the formatted string
+      const chatMessage = text.match(/^CHAT_MSG \[(.*?)\]: (.*)$/);
+      if (chatMessage && chatMessage.length >= 3) {
+        console.log(`${chatMessage[1]} says: ${chatMessage[2]}`);
+      }
+    } else {
+      console.log('PAGE LOG:', text);
+    }
     rl.prompt();
   });
 
@@ -78,6 +87,26 @@ const rl = readline.createInterface({
       default:
         console.log(`Unknown command: ${command}`);
     }
+  });
+
+  rl.on('line', async (line) => {
+    const trimmedLine = line.trim();
+    if (trimmedLine.startsWith('reply ') || trimmedLine.startsWith('@')) {
+      const [command, ...messageParts] = trimmedLine.split(' ');
+      let ghUsername;
+      if ( command.startsWith('@') ) {
+        ghUsername = command.slice(1);
+      } else {
+        ghUsername = messageParts.shift();
+      }
+      const message = messageParts.join(' ');
+      await page.evaluate(window.sendMessageToClient, ghUsername, message);
+    } else if (trimmedLine === 'list') {
+      // Implement listing clients logic
+    } else {
+      console.log('Unknown command.');
+    }
+    rl.prompt();
   });
 
   await new Promise(resolve => 0); // Keep the script running
