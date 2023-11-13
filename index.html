@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebRTC Client Page</title>
+  <script src="https://cdn.jsdelivr.net/npm/simple-peer@9/simplepeer.min.js"></script>
+</head>
+<body>
+  <h1>WebRTC Client</h1>
+  <iframe id="blog-iframe"></iframe>
+  <section id="blog"></section>
+  <div id="chat">
+    <textarea id="chat-window" readonly></textarea>
+    <input type="text" id="chat-input" placeholder="Type your message...">
+    <button id="send-button">Send</button>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const signalData = urlParams.get('data');
+
+    if (signalData) {
+      const peer = new SimplePeer();
+
+      peer.on('signal', data => {
+        // Handle the signal data. Typically, this would be sent back to the server.
+        console.log('Signal data:', JSON.stringify(data));
+      });
+
+      peer.on('connect', () => {
+        console.log('Connected to peer!');
+        // Connection is established. You can now start sending or receiving data.
+      });
+
+      peer.on('data', data => {
+        console.log('Received message:', data.toString());
+        // Here you can handle incoming data.
+        try {
+        const message = JSON.parse(data.toString());
+        if (message.type === 'blog') {
+          document.getElementById('blog-iframe').srcdoc = message.content;
+        }
+        } catch(e) {
+        console.warn(`Could not parse message (only showing first 140 chars)`, e, message.slice(0, 140));
+        }
+      });
+
+      peer.on('error', err => {
+        console.error('WebRTC Error:', err);
+      });
+
+      // Decode and use the signaling data received in the URL to establish connection
+      try {
+        const decodedData = JSON.parse(decodeURIComponent(signalData));
+        peer.signal(decodedData);
+      } catch (err) {
+        console.error('Error parsing signaling data:', err);
+      }
+    } else {
+      console.error('No signaling data found in URL.');
+    }
+  </script>
+</body>
+</html>
+

@@ -4,6 +4,14 @@ const os = require('os');
 const fs = require('fs').promises;
 const path = require('path');
 const { chromium } = require('playwright');
+const readline = require('readline');
+
+// Set up readline interface
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  prompt: 'chat> '
+});
 
 (async () => {
   if ( ! process.env.GH_ACCESS_TOKEN || ! process.env.REPO_URL ) {
@@ -22,7 +30,10 @@ const { chromium } = require('playwright');
   });
   const page = await browser.newPage();
 
-  page.on('console', message => console.log('PAGE LOG:', message.text()));
+  page.on('console', message => {
+    console.log('PAGE LOG:', message.text());
+    rl.prompt();
+  });
 
   const {
     GH_ACCESS_TOKEN, 
@@ -33,11 +44,40 @@ const { chromium } = require('playwright');
   const fileUrl = `file://${filePath}?ghCreds=${encodeURIComponent(creds)}`;
   await page.goto(fileUrl);
 
+  rl.prompt();
+
   process.on('SIGINT', async () => {
     console.log('Closing browser due to Ctrl+C');
+    rl.close();
     await browser.close();
     await cleanupTempUserDataDir(tempDir);
     process.exit(0);
+  });
+
+  // Listen to command line input
+  rl.on('line', async (line) => {
+    // Parse the input line to implement chat commands
+    const [command, ...args] = line.split(' ');
+    switch (command) {
+      case 'reply':
+        // Implement reply functionality
+        const [ghHandle, ...messageParts] = args;
+        const message = messageParts.join(' ');
+        await page.evaluate((ghHandle, message) => {
+          // Function to send message to the browser's chat logic
+          // This assumes you have a function in your browser context to handle this
+          sendMessage(ghHandle, message);
+        }, ghHandle, message);
+        break;
+      case 'list':
+        // Implement list functionality
+        console.log('Listing connected clients...');
+        // Similar to above, call a function in the browser's context
+        await page.evaluate(() => listClients());
+        break;
+      default:
+        console.log(`Unknown command: ${command}`);
+    }
   });
 
   await new Promise(resolve => 0); // Keep the script running

@@ -7,6 +7,50 @@
 </head>
 <body>
   <h1>WebRTC 'Server'</h1>
+  <section id="blog">
+    <!-- Example blog content ( this whole blog section element will be sent over the wire ) -->
+    <style>
+        /* Basic styles for blog */
+        #blog {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        .article {
+            margin-bottom: 40px;
+        }
+        .article h2 {
+            color: #333;
+        }
+        .article p {
+            color: #666;
+        }
+    </style>
+    <div class="article">
+        <h2>Exploring the Mysteries of UFOs</h2>
+        <p>Written by AI: Unidentified Flying Objects have always stirred the curiosity of humankind. Are we alone in the universe or is there life beyond our planet?...</p>
+    </div>
+    <div class="article">
+        <h2>The Joy of Cooking</h2>
+        <p>Written by AI: Cooking is not just a necessity; it's an art. Exploring different cuisines opens up a world of flavors and experiences...</p>
+    </div>
+    <div class="article">
+        <h2>Latest Gadgets in Tech</h2>
+        <p>Written by AI: The world of technology is ever-evolving, and the latest gadgets offer a glimpse into the future. From AI-driven devices to smart home systems...</p>
+    </div>
+    <div class="article">
+        <h2>Best Books to Read This Year</h2>
+        <p>Written by AI: Whether you're into fiction, non-fiction, or anything in between, there's always a good book waiting to be read. Here are some top picks for the year...</p>
+    </div>
+    <div class="article">
+        <h2>Traveling the World</h2>
+        <p>Written by AI: Traveling opens up new horizons, offering a glimpse into diverse cultures, landscapes, and experiences. Let's explore some must-visit destinations...</p>
+    </div>
+    <div class="article">
+        <h2>Developer Topics: Staying Ahead</h2>
+        <p>Written by AI: In the ever-changing world of software development, staying updated with the latest trends and technologies is key. Let's dive into some important topics for developers...</p>
+    </div>
+  </section>
   <script>
     // Parse URL parameters to get GitHub credentials
     const urlParams = new URLSearchParams(window.location.search);
@@ -23,6 +67,7 @@
   </script>
   <script>
     async function pollGitHubAPI(repoUrl, accessToken) {
+      repoUrl = new URL(repoUrl.replace(/\/$/, '')).href;
       let lastChecked = new Date().toISOString();
 
       setInterval(async () => {
@@ -36,15 +81,48 @@
 
         if (issues.length > 0) {
           console.log('New issues:', issues);
-          // For each new issue, start the connection process
-          issues.forEach(issue => beginConnectionProcess(issue));
+          issues.forEach(issue => {
+            const postComment = createCommentPoster(issue.number, repoUrl, accessToken);
+            beginConnectionProcess(postComment);
+          });
         }
 
         lastChecked = new Date().toISOString();
       }, 60000); // Poll every minute
     }
 
-    function beginConnectionProcess() {
+    function createCommentPoster(issueNumber, repoUrl, accessToken) {
+      return async (signalData) => {
+        const staticSiteUrl = formatStaticSiteUrl(repoUrl, signalData);
+        await postCommentToIssue(issueNumber, staticSiteUrl, repoUrl, accessToken);
+      };
+    }
+
+    function formatStaticSiteUrl(repoUrl, signalData) {
+      const [ userName, repoName ] = new URL(repoUrl).pathname.split('/').filter(part => part.length);
+      const encodedSignalData = encodeURIComponent(JSON.stringify(signalData));
+      return `https://${userName}.github.io/${repoName}?data=${encodedSignalData}`;
+    }
+
+    async function postCommentToIssue(issueNumber, commentUrl, repoUrl, accessToken) {
+      const commentResponse = await fetch(`${repoUrl}/issues/${issueNumber}/comments`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `token ${accessToken}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ body: `Here's your connection link: ${commentUrl}` })
+      });
+
+      if (!commentResponse.ok) {
+        console.error('Failed to post comment:', await commentResponse.text());
+      } else {
+        console.log('Comment posted successfully.');
+      }
+    }
+
+    function beginConnectionProcess(postComment) {
       // Create a new peer as the initiator
       const peer = new SimplePeer({ initiator: true, trickle: false });
 
@@ -54,13 +132,15 @@
       peer.on('signal', data => {
         console.log('Signal data:', JSON.stringify(data));
         // Send this data back to your server or GitHub as needed
+        postComment(data);
       });
 
       // When peer connection is established
       peer.on('connect', () => {
         console.log('New client connected!');
         dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
-        dataChannel.send('Hello from the WebRTC "server"!');
+        dataChannel.send({type: 'chat', msg: 'Hello from the WebRTC "server"!'});
+        dataChannel.send({type: 'blog', content: document.querySelector('section#blog').outerHTML });
       });
 
       // Receiving messages on the data channel
