@@ -145,7 +145,14 @@
       let resolve;
       const pr = new Promise(res => resolve = res);
       try {
-        const peer = new SimplePeer({ initiator: true, trickle: false });
+        const peer = new SimplePeer({ 
+          initiator: true, 
+          trickle: true,
+          channelConfig: {
+            ordered: true,
+            maxRetransmits: 0,
+          }
+        });
         clients[ghUsername] = peer;
 
         let dataChannel;

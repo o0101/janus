@@ -35,7 +35,7 @@
     let peer;
 
     if (signalData) {
-      peer = new SimplePeer();
+      peer = new SimplePeer({ trickle: true, initiator: false });
 
       peer.on('signal', data => {
         console.log('Signal data:', JSON.stringify(data));
