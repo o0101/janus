@@ -19,13 +19,12 @@ const rl = readline.createInterface({
     return process.exit(1);
   }
 
-  const tempDir = os.tmpdir();
-  const browser = await chromium.launch({ 
+  const tempDir = await createTempDir();
+  const browser = await chromium.launchPersistentContext(tempDir, { 
     headless: true,
     args: [
       `--disable-web-security`, // disable CORS to make requests to GH API to poll
       `--enable-local-file-access`, // enable file access to blog files
-      `--user-data-dir=${tempDir}`, // needed to switch on 'disable-web-security'
     ]
   });
   const page = await browser.newPage();
@@ -55,40 +54,9 @@ const rl = readline.createInterface({
 
   rl.prompt();
 
-  process.on('SIGINT', async () => {
-    console.log('Closing browser due to Ctrl+C');
-    rl.close();
-    await browser.close();
-    await cleanupTempUserDataDir(tempDir);
-    process.exit(0);
-  });
+  process.on('SIGINT', cleanupNow);
 
   // Listen to command line input
-  rl.on('line', async (line) => {
-    // Parse the input line to implement chat commands
-    const [command, ...args] = line.split(' ');
-    switch (command) {
-      case 'reply':
-        // Implement reply functionality
-        const [ghHandle, ...messageParts] = args;
-        const message = messageParts.join(' ');
-        await page.evaluate((ghHandle, message) => {
-          // Function to send message to the browser's chat logic
-          // This assumes you have a function in your browser context to handle this
-          sendMessage(ghHandle, message);
-        }, ghHandle, message);
-        break;
-      case 'list':
-        // Implement list functionality
-        console.log('Listing connected clients...');
-        // Similar to above, call a function in the browser's context
-        await page.evaluate(() => listClients());
-        break;
-      default:
-        console.log(`Unknown command: ${command}`);
-    }
-  });
-
   rl.on('line', async (line) => {
     const trimmedLine = line.trim();
     if (trimmedLine.startsWith('reply ') || trimmedLine.startsWith('@')) {
@@ -100,16 +68,27 @@ const rl = readline.createInterface({
         ghUsername = messageParts.shift();
       }
       const message = messageParts.join(' ');
-      await page.evaluate(window.sendMessageToClient, ghUsername, message);
+      await page.evaluate(({ghUsername, message}) => globalThis.sendMessageToClient(ghUsername, message), {ghUsername, message});
     } else if (trimmedLine === 'list') {
-      // Implement listing clients logic
+      const handles = await page.evaluate(() => Object.keys(clients));
+      console.log(`Connected clients: ${handles}`);
+    } else if ( trimmedLine == 'quit' ) {
+      return cleanupNow();
     } else {
       console.log('Unknown command.');
     }
     rl.prompt();
   });
 
-  await new Promise(resolve => 0); // Keep the script running
+  return await new Promise(resolve => 0); // Keep the script running
+
+  async function cleanupNow() {
+    console.log('Closing browser due to Ctrl+C');
+    rl.close();
+    await browser.close();
+    await cleanupTempUserDataDir(tempDir);
+    process.exit(0);
+  }
 })();
 
 async function cleanupTempUserDataDir(tempDir) {
@@ -117,4 +96,18 @@ async function cleanupTempUserDataDir(tempDir) {
     recursive: true,
     force: true
   });
+}
+
+async function createTempDir() {
+  const tmpBaseDir = os.tmpdir();
+  const prefix = 'dosyago.janus_';  // Replace 'yourPrefix_' with your desired prefix
+
+  try {
+    const tmpDir = await fs.mkdtemp(path.join(tmpBaseDir, prefix));
+    console.log('Created temporary directory:', tmpDir);
+    return tmpDir;
+  } catch (err) {
+    console.error('Failed to create temporary directory:', err);
+    throw err;  // Re-throw the error if necessary
+  }
 }

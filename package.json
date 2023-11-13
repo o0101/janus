@@ -1,5 +1,34 @@
 {
   "dependencies": {
     "playwright": "^1.39.0"
-  }
+  },
+  "name": "janus",
+  "description": "### Description:",
+  "version": "1.0.0",
+  "main": "local-webrtc-backend/run-page.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "node local-webrtc-backend/run-page.js",
+    "postinstall": "npx playwright install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/00000o1/janus.git"
+  },
+  "keywords": [
+    "janues",
+    "p2p",
+    "blog",
+    "p2p",
+    "chat",
+    "webrtc",
+    "github",
+    "develop"
+  ],
+  "author": "@dosy",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/00000o1/janus/issues"
+  },
+  "homepage": "https://github.com/00000o1/janus#readme"
 }

@@ -24,6 +24,46 @@ Janus is an innovative project that leverages WebRTC and GitHub's API to create 
 - **Content Filtering**: Be cautious about the content shared over the chat, as it's directly transmitted between peers.
 - **Browser Security**: Running in a headless browser with certain security features disabled (like CORS) could have implications depending on your local setup and network environment.
 
+### Getting Started with Janus
+
+#### Setting up Your GitHub Access Token
+
+To use Janus, you'll need a GitHub Access Token with appropriate permissions. This token is used for interacting with the GitHub API – primarily for reading and writing comments on issues. Here's how you can generate your token:
+
+1. **Log in to GitHub**: Visit [GitHub](https://github.com/) and sign in to your account.
+
+2. **Access Personal Access Tokens Settings**:
+   - Click on your profile picture in the top right corner.
+   - Go to `Settings`.
+   - In the left sidebar, click on `Developer settings`.
+   - Then click on `Personal access tokens`.
+
+3. **Generate New Token**:
+   - Click on the `Generate new token` button.
+   - Give your token a name in the `Note` field.
+   - Select the scopes or permissions you want to grant this token. For Janus, you'll need the specific repository that you forked or generated Janues too, as well as the Contents read permission and the Issues read and write permission.
+   - Click `Generate token` at the bottom of the page.
+
+4. **Copy and Save Your Token**:
+   - **Important**: Copy your new personal access token now. You won't be able to see it again!
+   - Save it in a secure place, as you will need to use this token in the `GH_ACCESS_TOKEN` environment variable.
+
+#### Cloning and Running Janus
+
+1. **Clone the Repository**:
+   ```
+   git clone https://github.com/00000o1/janus.git
+   ```
+
+2. **Set Environment Variables**:
+   - Set `GH_ACCESS_TOKEN` with the token you just generated.
+   - Set `REPO_URL` with the URL of the GitHub repository you're using.
+
+3. **Running Janus**:
+   - Navigate to the Janus directory and run the `./local-webrtc-backend/run-page.js` script.
+   - Follow the instructions in the script to start using Janus.
+
+
 ### Future Enhancements:
 
 - **UI Improvements**: Enhance the chat interface for a better user experience.
