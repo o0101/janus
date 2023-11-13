@@ -106,14 +106,17 @@
               }
             });
             const comments = await commentsResponse.json();
-            console.log(comments);
             const webrtcResponseComment = comments.find(comment => isResponseComment(comment));
+            const ownComment = comments.find(comment => comment.user.login === username && comment.body.includes('janus://click_to_dial'));
 
             if (webrtcResponseComment) {
               console.log('found webrtc response comment', webrtcResponseComment);
               processResponseComment(webrtcResponseComment, ghUsername);
               closeIssue(issue.number, repoUrl, accessToken); // Close the issue after processing the comment
               processedIssues.add(issue.number);
+            } else if (ownComment) {
+              console.log(`Already responded to issue #${issue.number}.`);
+              continue; // Skip this issue as we've already posted a comment
             } else {
               const postComment = createCommentPoster(issue.number, repoUrl, accessToken, ghUsername);
               await beginConnectionProcess(postComment, ghUsername); // Open new connection

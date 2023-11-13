@@ -1,4 +1,22 @@
-## Janus - Simple P2P Developer Text Chat and P2P Blog on GitHub
+## Janus - Simple P2P Blog and Developer P2P Chat on GitHUb
+
+Basic idea is you run a HTML page as a server via WebRTC and interact with it connecting clients via a command-line prompt. Those clients connect by opening an issue on your repo, and performing a basic rain dance to establish the p2p link via the proper ritual. A comment bot guides them through the elaborate dance, and right into your console. Where you can chat with them, defer, kick or ban them if you want.
+
+In future we plan to support sending and receiving files to enable collaboration on code. There may be better methods such as opening collaborative editors.
+
+Right now, to request a chat with you, they need to open the issue on your janus repo, but in future we may expand it to work across any of your repos, for example by tagging [janus] in the issue title. 
+ 
+It's a weird mix of personal IRC server, p2p anomaly, WebRTC experiment, GitHub experiment, p2p blog, and other nice ideas.
+
+We noticed that a lot of people need to chat in real time in order to collaborate on open source projects and often suggest going "off site" or "out of band" to other platforms. We consider this unnecessary and annyoing and with janus seek to provide an "in band", "on site" way to collaborate on GH open source that's simple, empowering, and decentralized. 
+
+While unaffiliated with GH in any way, our hope is that ultimately GitHub will provide a dedicated API end-point and UI affordance for janus signalling data in order to both reduce the use-case overloading of issues as a singalling channel, as well as to streamline the user experience of P2P developer to developer chat on GitHub, leading to increased developer productivity, happiness, empowerment and an overall better developer experiece.
+
+In our opinion, P2P developer chat should be a first-class citizen of GH, but if it's not, we're happy to work with the community of people who want this to build janus into the best it can be. Onward and upward! :) 
+
+Cris, November 18, 2023
+
+Buenos Aires
 
 ### Description:
 
