@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebRTC Server Page</title>
+  <script src="https://cdn.jsdelivr.net/npm/simple-peer@9/simplepeer.min.js"></script>
+</head>
+<body>
+  <h1>WebRTC 'Server'</h1>
+  <script>
+    // Parse URL parameters to get GitHub credentials
+    const urlParams = new URLSearchParams(window.location.search);
+    const ghCreds = JSON.parse(decodeURIComponent(urlParams.get('ghCreds')));
+    const ghAccessToken = ghCreds.GH_ACCESS_TOKEN;
+    const repoUrl = ghCreds.REPO_URL;
+
+    if (!ghAccessToken) {
+      console.error('GitHub access token not found!');
+    } else {
+      console.log('GitHub access token retrieved.');
+      pollGitHubAPI(repoUrl, ghAccessToken);
+    }
+  </script>
+  <script>
+    async function pollGitHubAPI(repoUrl, accessToken) {
+      let lastChecked = new Date().toISOString();
+
+      setInterval(async () => {
+        const response = await fetch(`${repoUrl}/issues?since=${lastChecked}`, {
+          headers: {
+            'Authorization': `token ${accessToken}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        const issues = await response.json();
+
+        if (issues.length > 0) {
+          console.log('New issues:', issues);
+          // For each new issue, start the connection process
+          issues.forEach(issue => beginConnectionProcess(issue));
+        }
+
+        lastChecked = new Date().toISOString();
+      }, 60000); // Poll every minute
+    }
+
+    function beginConnectionProcess() {
+      // Create a new peer as the initiator
+      const peer = new SimplePeer({ initiator: true, trickle: false });
+
+      let dataChannel;
+
+      // When the peer generates a signaling data (offer), log it
+      peer.on('signal', data => {
+        console.log('Signal data:', JSON.stringify(data));
+        // Send this data back to your server or GitHub as needed
+      });
+
+      // When peer connection is established
+      peer.on('connect', () => {
+        console.log('New client connected!');
+        dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
+        dataChannel.send('Hello from the WebRTC "server"!');
+      });
+
+      // Receiving messages on the data channel
+      peer.on('data', data => {
+        console.log('Received message from client:', data.toString());
+      });
+
+      // Handling errors
+      peer.on('error', err => {
+        console.error('WebRTC Error:', err);
+      });
+    }
+  </script>
+</body>
+</html>
+
