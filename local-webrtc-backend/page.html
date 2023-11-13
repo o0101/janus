@@ -98,10 +98,6 @@
         if (issues.length > 0) {
           console.log('Updated issues:', issues.map(issue => `#${issue.number}`));
           for (const issue of issues) {
-            if (processedIssues.has(issue.number)) {
-              continue; // Skip already processed issues
-            }
-
             const ghUsername = issue.user.login; // Extract GitHub username
             const commentsResponse = await fetch(issue.comments_url, {
               headers: {
@@ -116,12 +112,12 @@
               console.log('found webrtc response comment', webrtcResponseComment);
               processResponseComment(webrtcResponseComment, ghUsername);
               closeIssue(issue.number, repoUrl, accessToken); // Close the issue after processing the comment
+              processedIssues.add(issue.number);
             } else {
               const postComment = createCommentPoster(issue.number, repoUrl, accessToken, ghUsername);
               await beginConnectionProcess(postComment, ghUsername); // Open new connection
             }
 
-            processedIssues.add(issue.number);
             await sleep(200);
           }
           lastChecked = new Date().toISOString();
@@ -131,7 +127,7 @@
 
     function isResponseComment(comment) {
       // Determine if the comment is a WebRTC response
-      return comment.body.startsWith('janus://calling-from/');
+      return comment.body.startsWith('janus://calling_from/');
     }
 
     function processResponseComment(comment, ghUsername) {
@@ -146,7 +142,7 @@
 
     function extractSignalDataFromComment(commentBody) {
       // Assuming the signaling data is JSON encoded within the comment body
-      const signalDataString = commentBody.replace('janus://calling-from/', '').trim();
+      const signalDataString = commentBody.replace('janus://calling_from/', '').trim();
       return JSON.parse(atob(signalDataString));
     }
 
