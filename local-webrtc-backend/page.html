@@ -96,7 +96,7 @@
         const issues = await response.json();
 
         if (issues.length > 0) {
-          console.log('New issues:', issues.map(issue => `#${issue.number}`));
+          console.log('Updated issues:', issues.map(issue => `#${issue.number}`));
           for (const issue of issues) {
             if (processedIssues.has(issue.number)) {
               continue; // Skip already processed issues
@@ -113,6 +113,7 @@
             const webrtcResponseComment = comments.find(comment => isResponseComment(comment));
 
             if (webrtcResponseComment) {
+              console.log('found webrtc response comment', webrtcResponseComment);
               processResponseComment(webrtcResponseComment, ghUsername);
               closeIssue(issue.number, repoUrl, accessToken); // Close the issue after processing the comment
             } else {
@@ -192,7 +193,7 @@
     }
 
     async function postCommentToIssue(issueNumber, commentUrl, repoUrl, accessToken) {
-      const markdownLink = `[janus://dials/${username}](${commentUrl})`;
+      const markdownLink = `[janus://dialing/${username}](${commentUrl})`;
       try {
         const commentResponse = await fetch(`https://api.github.com/repos/${username}/${repoName}/issues/${issueNumber}/comments`, {
           method: 'POST',
