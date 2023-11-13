@@ -53,6 +53,7 @@
   </section>
   <script>
     // Parse URL parameters to get GitHub credentials
+    const startTime = new Date().toISOString();
     const urlParams = new URLSearchParams(window.location.search);
     const ghCreds = JSON.parse(decodeURIComponent(urlParams.get('ghCreds')));
     const ghAccessToken = ghCreds.GH_ACCESS_TOKEN;
@@ -86,7 +87,7 @@
     async function pollGitHubAPI(repoUrl, accessToken) {
       repoUrl = new URL(repoUrl.replace(/\/$/, '')).href;
       let lastChecked = new Date().toISOString();
-      let processedIssues = new Set(); // Set to keep track of processed issues
+      let processedIssues = new Map(); // Map to keep track of processed issues and comment check times
 
       setInterval(async () => {
         const response = await fetch(`https://api.github.com/repos/${username}/${repoName}/issues?since=${lastChecked}&state=open`, {
@@ -102,12 +103,14 @@
           DEBUG.verbose && console.log('Updated issues:', issues.map(issue => `#${issue.number}`));
           for (const issue of issues) {
             const ghUsername = issue.user.login; // Extract GitHub username
-            const commentsResponse = await fetch(issue.comments_url, {
+            let lastCheckedForComments = processedIssues.get(issue.number) || startTime;
+            const commentsResponse = await fetch(`${issue.comments_url}?since=${lastCheckedForComments}`, {
               headers: {
                 'Authorization': `token ${accessToken}`,
                 'Accept': 'application/vnd.github.v3+json'
               }
             });
+            processedIssues.set(issue.number, lastCheckedForComments);
             const comments = await commentsResponse.json();
             const webrtcResponseComment = comments.find(comment => isResponseComment(comment));
             const ownComment = comments.find(comment => comment.user.login === username && comment.body.includes('janus://click_to_dial'));
@@ -115,8 +118,7 @@
             if (webrtcResponseComment) {
               DEBUG.verbose && console.log('found webrtc response comment', webrtcResponseComment);
               await processResponseComment(webrtcResponseComment, ghUsername);
-              closeIssue(issue.number, repoUrl, accessToken); // Close the issue after processing the comment
-              processedIssues.add(issue.number);
+              await closeIssue(issue.number, repoUrl, accessToken); // Close the issue after processing the comment
             } else if (ownComment) {
               DEBUG.verbose && console.log(`Already responded to issue #${issue.number}.`);
               continue; // Skip this issue as we've already posted a comment
@@ -157,6 +159,7 @@
     }
 
     async function closeIssue(issueNumber, repoUrl, accessToken) {
+      await postCommentToIssue(issueNumber, accessToken, `Alright you should be p2p connected now! It's safe to close this tab and return to your P2P tab to browse the blog and chat`);
       const closeIssueUrl = `https://api.github.com/repos/${username}/${repoName}/issues/${issueNumber}`;
       const body = {
         state: 'closed'
@@ -183,10 +186,11 @@
       }
     }
 
-    function createCommentPoster(issueNumber, repoUrl, accessToken, ghUsername) {
+    function reateCommentPoster(issueNumber, repoUrl, accessToken, ghUsername) {
       return async (signalData) => {
         const staticSiteUrl = formatStaticSiteUrl(repoUrl, signalData, `${repoUrl}/issues/${issueNumber}`);
-        await postCommentToIssue(issueNumber, staticSiteUrl, repoUrl, accessToken, ghUsername);
+        const commentText = `Hey @${ghUsername}! I'm available to chat. Click this link to dial me: [janus://click_to_dial/${username}](${staticSiteUrl})\nThen paste the p2p locator you get, below!`;
+        await postCommentToIssue(issueNumber, accessToken, commentText);
       };
     }
 
@@ -197,8 +201,7 @@
       return `https://${userName}.github.io/${repoName}?data=${encodedSignalData}&issue=${encodedIssueUrl}`;
     }
 
-    async function postCommentToIssue(issueNumber, commentUrl, repoUrl, accessToken, ghUsername) {
-      const markdownLink = `Hey @${ghUsername}! I'm available to chat. Click this link to start: [janus://click_to_dial/${username}](${commentUrl})\nThen paste your p2p locator below.`;
+    async function postCommentToIssue(issueNumber, accessToken, commentText) {
       try {
         const commentResponse = await fetch(`https://api.github.com/repos/${username}/${repoName}/issues/${issueNumber}/comments`, {
           method: 'POST',
@@ -207,7 +210,7 @@
             'Accept': 'application/vnd.github.v3+json',
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ body: markdownLink })
+          body: JSON.stringify({ body: commentText })
         });
 
         if (!commentResponse.ok) {
@@ -248,7 +251,7 @@
         peer.on('connect', () => {
           console.log('New client connected!', ghUsername);
           dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
-          dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello ${ghUsername} from the WebRTC "server"!`}));
+          dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello ${ghUsername} from the WebRTC "server"!`, handle: username}));
           dataChannel.send(JSON.stringify({type: 'blog', content: document.querySelector('section#blog').outerHTML }));
         });
 
