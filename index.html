@@ -32,9 +32,10 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const signalData = urlParams.get('data');
+    let peer;
 
     if (signalData) {
-      const peer = new SimplePeer();
+      peer = new SimplePeer();
 
       peer.on('signal', data => {
         console.log('Signal data:', JSON.stringify(data));
@@ -78,7 +79,7 @@
     document.getElementById('send-button').addEventListener('click', () => {
       const input = document.getElementById('chat-input');
       const message = input.value.trim().substring(0, 140); // Limit to 140 chars
-      if (message) {
+      if (message && peer) {
         peer.send(JSON.stringify({ type: 'chat', msg: message }));
         input.value = '';
       }

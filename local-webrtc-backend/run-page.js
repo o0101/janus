@@ -104,7 +104,6 @@ async function createTempDir() {
 
   try {
     const tmpDir = await fs.mkdtemp(path.join(tmpBaseDir, prefix));
-    console.log('Created temporary directory:', tmpDir);
     return tmpDir;
   } catch (err) {
     console.error('Failed to create temporary directory:', err);

@@ -121,7 +121,7 @@
     }
 
     async function postCommentToIssue(issueNumber, commentUrl, repoUrl, accessToken) {
-      const commentResponse = await fetch(`${repoUrl}/issues/${issueNumber}/comments`, {
+      const commentResponse = await fetch(`https://api.github.com/repos/${username}/${repoName}/issues/${issueNumber}/comments`, {
         method: 'POST',
         headers: {
           'Authorization': `token ${accessToken}`,
