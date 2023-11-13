@@ -30,7 +30,7 @@
   </div>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URL(location).searchParams;
     const signalData = urlParams.get('data');
     let peer;
 
@@ -67,7 +67,7 @@
 
       // Decode and use the signaling data received in the URL to establish connection
       try {
-        const decodedData = JSON.parse(decodeURIComponent(signalData));
+        const decodedData = JSON.parse(signalData);
         peer.signal(decodedData);
       } catch (err) {
         console.error('Error parsing signaling data:', err);

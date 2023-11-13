@@ -95,15 +95,17 @@
         const issues = await response.json();
 
         if (issues.length > 0) {
-          console.log('New issues:', issues);
-          issues.forEach(issue => {
+          console.log('New issues:', issues.map(issue => `#${issue.number}`));
+          issues.forEach(async issue => {
             const ghUsername = issue.user.login; // Extract GitHub username
             const postComment = createCommentPoster(issue.number, repoUrl, accessToken, ghUsername);
-            beginConnectionProcess(postComment, ghUsername); // Pass the username to your connection process
+            await beginConnectionProcess(postComment, ghUsername); // Pass the username to your connection process
+            await sleep(1000);
+            lastChecked = new Date().toISOString();
           });
+          lastChecked = new Date().toISOString();
         }
 
-        lastChecked = new Date().toISOString();
       }, 15051); // Poll every quarter minute approximately
     }
 
@@ -138,48 +140,62 @@
       }
     }
 
-    function beginConnectionProcess(postComment, ghUsername) {
+    async function beginConnectionProcess(postComment, ghUsername) {
       // Create a new peer as the initiator
-      const peer = new SimplePeer({ initiator: true, trickle: false });
-      clients[ghUsername] = peer;
+      let resolve;
+      const pr = new Promise(res => resolve = res);
+      try {
+        const peer = new SimplePeer({ initiator: true, trickle: false });
+        clients[ghUsername] = peer;
 
-      let dataChannel;
+        let dataChannel;
 
-      // When the peer generates a signaling data (offer), log it
-      peer.on('signal', data => {
-        console.log('Signal data:', JSON.stringify(data));
-        // Send this data back to your server or GitHub as needed
-        postComment(data);
-      });
+        // When the peer generates a signaling data (offer), log it
+        peer.on('signal', data => {
+          console.log('Signal data:', JSON.stringify(data));
+          // Send this data back to your server or GitHub as needed
+          postComment(data).then(resolve);
+        });
 
-      // When peer connection is established
-      peer.on('connect', () => {
-        console.log('New client connected!', ghUsername);
-        dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
-        dataChannel.send({type: 'chat', msg: `Hello ${ghUsername} from the WebRTC "server"!`});
-        dataChannel.send({type: 'blog', content: document.querySelector('section#blog').outerHTML });
-      });
+        // When peer connection is established
+        peer.on('connect', () => {
+          console.log('New client connected!', ghUsername);
+          dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
+          dataChannel.send({type: 'chat', msg: `Hello ${ghUsername} from the WebRTC "server"!`});
+          dataChannel.send({type: 'blog', content: document.querySelector('section#blog').outerHTML });
+        });
 
-      // Receiving messages on the data channel
-      peer.on('data', data => {
-        try {
-          const message = JSON.parse(data.toString());
-          if (message.type === 'chat') {
-            // Format the chat message for better readability in the console
-            console.log(`CHAT_MSG [${message.ghUsername}]: ${message.msg}`);
-          } else {
-            // For other types of messages, log them as is
-            console.log('Received message:', message);
+        // Receiving messages on the data channel
+        peer.on('data', data => {
+          try {
+            const message = JSON.parse(data.toString());
+            if (message.type === 'chat') {
+              // Format the chat message for better readability in the console
+              console.log(`CHAT_MSG [${message.ghUsername}]: ${message.msg}`);
+            } else {
+              // For other types of messages, log them as is
+              console.log('Received message:', message);
+            }
+          } catch (e) {
+            console.error('Error parsing received message:', e);
           }
-        } catch (e) {
-          console.error('Error parsing received message:', e);
-        }
-      });
+        });
 
-      // Handling errors
-      peer.on('error', err => {
-        console.error('WebRTC Error:', err);
-      });
+        // Handling errors
+        peer.on('error', err => {
+          console.error('WebRTC Error:', err);
+          resolve();
+        });
+      } catch(e) {
+        console.warn(`Error creating peer`, e);
+        resolve();
+      }
+      
+      return pr;
+    }
+
+    async function sleep(ms) {
+      return new Promise(res => setTimeout(res, ms));
     }
   </script>
 </body>
