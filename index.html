@@ -146,6 +146,11 @@
         peer = new SimplePeer({ 
           trickle: false, 
           initiator: false,
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.1.google.com:19302' }
+            ]
+          }
         });
 
         peer.on('signal', async data => {
