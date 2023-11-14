@@ -146,12 +146,6 @@
         peer = new SimplePeer({ 
           trickle: false, 
           initiator: false,
-          config: {
-            iceServers: [ 
-              { urls: 'stun:freestun.net:5350' }, 
-              { urls: 'turns:freestun.tel:5350', username: 'free', credential: 'free' } 
-            ]
-          }
         });
 
         peer.on('signal', async data => {
@@ -311,7 +305,7 @@
         // Check if the device is mobile
         if (deviceIsMobile()) {
           // Check current permission states for microphone and camera
-          const micPerm = await navigator.permissions.query({ name: 'camera' });
+          const micPerm = await navigator.permissions.query({ name: 'microphone' });
 
           if (micPerm.state !== 'granted') {
             // Show explainer only if permissions haven't been granted yet
@@ -320,7 +314,7 @@
           }
 
           // Request media access for audio on mobile devices
-          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
           // If permissions were not already granted, inform the user they can revoke them
           if (micPerm.state !== 'granted') {
