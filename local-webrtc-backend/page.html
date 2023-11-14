@@ -240,11 +240,15 @@
 
     async function beginConnectionProcess(postComment, ghUsername, issueNumber) {
       // Create a new peer as the initiator
+      if ( inprocessConnections.has(issueNumber) && clients[ghUsername] && !clients[ghUsername].destroyed ) {
+        DEBUG.verbose && console.log(`Not creating a new connection because we already have one for ${ghUsername}`);
+      }
+      inprocessConnections.set(issueNumber, ghUsername);
       let resolve;
       const pr = new Promise(res => resolve = res);
       try {
         DEBUG.verbose && console.log(`Creating peer`);
-        const peer = new SimplePeer({ 
+        peer = new SimplePeer({ 
           initiator: true, 
           trickle: false,
           channelConfig: {
@@ -266,7 +270,6 @@
         // When peer connection is established
         peer.on('connect', () => {
           console.log('New client connected!', ghUsername);
-          inprocessConnections.delete(issueNumber);
           dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
           dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello @${ghUsername} from my personal WebRTC "server"! My blog content should have loaded below.`, handle: username}));
           dataChannel.send(JSON.stringify({type: 'blog', content: document.querySelector('section#blog').outerHTML }));
@@ -290,8 +293,17 @@
         });
 
         // Handling errors
+        peer.on('close', () => {
+          console.log(`Peer disconnected: ${ghUsername}`);
+          clients[ghUsername] = null;
+          inprocessConnections.delete(issueNumber);
+          resolve();
+        });
+
         peer.on('error', err => {
           console.error('WebRTC Error:', err);
+          clients[ghUsername] = null;
+          inprocessConnections.delete(issueNumber);
           resolve();
         });
       } catch(e) {
