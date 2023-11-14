@@ -302,7 +302,7 @@
 
           if (micPerm.state !== 'granted') {
             // Show explainer only if permissions haven't been granted yet
-            alert('We need to request media permissions to enable WebRTC data channels. ' +
+            alert('Due to a quirk in iOS Safari, we need to request media permissions to enable WebRTC P2P data channels. ' +
                   'You can cancel immediately after grant for privacy, as we don\'t use the stream.');
           }
 
