@@ -147,8 +147,9 @@
           trickle: false, 
           initiator: false,
           config: {
-            iceServers: [
-              { urls: 'stun:stun.1.google.com:19302' }
+            iceServers: [ 
+              { urls: 'stun:freestun.net:5350' }, 
+              { urls: 'turns:freestun.tel:5350', username: 'free', credential: 'free' } 
             ]
           }
         });
