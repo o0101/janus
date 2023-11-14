@@ -66,10 +66,41 @@
       text-align: center;
       margin-top: 20px;
     }
+    .progress-bar {
+      width: 100%;
+      background-color: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-indeterminate {
+      width: 30%;
+      height: 5px;
+      background-color: #007bff;
+      animation: progress-indeterminate 2s linear infinite;
+    }
+
+    @keyframes progress-indeterminate {
+      0% {
+        margin-left: -30%;
+        margin-right: 100%;
+      }
+      50% {
+        margin-left: 100%;
+        margin-right: -30%;
+      }
+      100% {
+        margin-left: 100%;
+        margin-right: -30%;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="connection-status">Connecting...</div>
+  <div class="connection-status" style="cursor: wait;">Generating your p2p locator...</div>
+  <div class="progress-bar">
+    <div class="progress-indeterminate"></div>
+  </div>
   <div id="chat">
     <textarea id="chat-window" readonly></textarea>
     <div class=input-line>
@@ -91,7 +122,7 @@
     const urlParams = new URL(location).searchParams;
     const signalData = urlParams.get('data');
     const issueUrl = urlParams.get('issue');
-    const alertBoxMessage = `Your p2p locator is copied to your clipboard.\nPlease paste it into a comment and post it on the issue.\nWe will open the issue now. Closing this chat page will cancel the p2p connection.`;
+    const alertBoxMessage = `Your p2p locator is now in your clipboard.\n\nWhen you close this dialog we will return you to the issue you came from. Please paste your locator into a new comment on that issue, then post that comment.\n\nPlease note: if you close this chat page you will end the p2p connection.`;
     let peer;
     let chatWindow;
     let input;
@@ -101,6 +132,7 @@
       chatWindow = document.getElementById('chat-window');
       input = document.getElementById('chat-input');
       status = document.querySelector('.connection-status');
+      progressBar = document.querySelector('.progress-bar');
 
       if (signalData) {
         peer = new SimplePeer({ trickle: false, initiator: false });
@@ -108,6 +140,10 @@
         peer.on('signal', async data => {
           const signalData = btoa(JSON.stringify(data));
           const janusLink = `janus://p2p_locator/${signalData}`;
+          requestAnimationFrame(() => {
+            status.innerText = "p2p locator ready!";
+            progressBar.remove();
+          });
           await copyToClipboard(janusLink, () => {
             alert(alertBoxMessage);
             window.open(issueUrl, '_blank');
@@ -208,7 +244,8 @@
 
       // Safari needs a user gesture to allow clipboard API
       if (navigator.userAgent.includes('Safari') || !window.isSecureContext) {
-        alert('Please tap the screen to copy the locator to your clipboard');
+        await sleep(300);
+        alert('When you close this dialog, please tap the screen to copy your locator to the clipboard.');
         document.onclick = async () => {
           document.onclick = null; // Remove this handler after the click
           await tryClipboardCopy();
@@ -216,6 +253,10 @@
       } else {
         await tryClipboardCopy();
       }
+    }
+
+    async function sleep(ms) {
+      return new Promise(res => setTimeout(res, ms));
     }
   </script>
 </body>
