@@ -109,7 +109,6 @@
           const signalData = btoa(JSON.stringify(data));
           const janusLink = `janus://p2p_locator/${signalData}`;
           await copyToClipboard(janusLink, () => {
-            console.log('Signal data copied to clipboard.');
             alert(alertBoxMessage);
             window.open(issueUrl, '_blank');
           });
@@ -209,9 +208,9 @@
 
       // Safari needs a user gesture to allow clipboard API
       if (navigator.userAgent.includes('Safari') || !window.isSecureContext) {
+        alert('Please tap the screen to copy the locator to your clipboard');
         document.onclick = async () => {
           document.onclick = null; // Remove this handler after the click
-          alert('Please tap the screen to copy the locator to your clipboard');
           await tryClipboardCopy();
         };
       } else {
