@@ -243,7 +243,7 @@
       };
 
       // Safari needs a user gesture to allow clipboard API
-      if (navigator.userAgent.includes('Safari') || !window.isSecureContext) {
+      if (isSafariBrowser() || !window.isSecureContext) {
         await sleep(300);
         alert('When you close this dialog, please tap the screen to copy your locator to the clipboard.');
         document.onclick = async () => {
@@ -257,6 +257,10 @@
 
     async function sleep(ms) {
       return new Promise(res => setTimeout(res, ms));
+    }
+
+    function isSafariBrowser() {
+      return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     }
   </script>
 </body>
