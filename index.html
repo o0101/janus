@@ -315,7 +315,7 @@
 
           // If permissions were not already granted, inform the user they can revoke them
           if (micPerm.state !== 'granted') {
-            alert(`Media access granted.\n\nYou can click on the red mic icon below to enable Always Allow if you don't want to be asked again.\n\nFor privacy we will shut your mic as soon as the connection is made, and the mic icon will disappear.\n\nBut for convenience, we'll give you around 10 seconds after that, in case you wish to click the icon to set Always Allow.`);
+            alert(`Media access granted.\n\nIf you don't want to be asked again, you can click on the red mic icon, then on Website Settings, then on Audio, and click Allow.\n\nFor privacy we will shut your mic as soon as the connection is made, and the mic icon will disappear.\n\nBut for convenience, we'll give you around 10 seconds after that, in case you wish to click the icon to set Allow.`);
           }
         }
       } catch (error) {
