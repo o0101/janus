@@ -256,6 +256,23 @@
       const pr = new Promise(res => resolve = res);
       try {
         DEBUG.verbose && console.log(`Creating peer`);
+        let maxRetries = 5;
+        let i = 0;
+        while(! (await establishConnection())) {
+          console.log(`Retrying connection in 3 seconds...`);
+          await sleep(3000);
+          if ( i++ > maxRetries ) {
+            throw new Error(`Could not connect peer`);
+          }
+        }
+      } catch(e) {
+        console.warn(`Error creating peer`, e);
+        resolve();
+      }
+
+      async function establishConnection() {
+        let cresolve;
+        const cpr = new Promise(res => cresolve);
         peer = new SimplePeer({ 
           initiator: true, 
           trickle: false,
@@ -281,6 +298,7 @@
           dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
           dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello @${ghUsername}! Welcome to my personal P2P "server"! My blog content should have loaded below.`, handle: username}));
           dataChannel.send(JSON.stringify({type: 'blog', content: document.querySelector('section#blog').outerHTML }));
+          cresolve(true);
         });
 
         // Receiving messages on the data channel
@@ -305,6 +323,7 @@
           console.log(`Peer disconnected: ${ghUsername}`);
           clients[ghUsername] = null;
           inprocessConnections.delete(issueNumber);
+          cresolve(false);
           resolve();
         });
 
@@ -312,11 +331,10 @@
           console.error('WebRTC Error:', err);
           clients[ghUsername] = null;
           inprocessConnections.delete(issueNumber);
+          cresolve(false);
           resolve();
         });
-      } catch(e) {
-        console.warn(`Error creating peer`, e);
-        resolve();
+        return cpr;
       }
       
       return pr;
