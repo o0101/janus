@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>WebRTC Server Page</title>
-  <script src="https://cdn.jsdelivr.net/npm/simple-peer@9/simplepeer.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/latent-peer@10/simplepeer.min.js"></script>
 </head>
 <body>
   <h1>WebRTC 'Server'</h1>
@@ -279,7 +279,7 @@
         peer.on('connect', () => {
           console.log('New client connected!', ghUsername);
           dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
-          dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello @${ghUsername} from my personal WebRTC "server"! My blog content should have loaded below.`, handle: username}));
+          dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello @${ghUsername}! Welcome to my personal P2P "server"! My blog content should have loaded below.`, handle: username}));
           dataChannel.send(JSON.stringify({type: 'blog', content: document.querySelector('section#blog').outerHTML }));
         });
 
