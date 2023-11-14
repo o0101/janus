@@ -116,6 +116,7 @@
         });
 
         peer.on('close', () => {
+          console.info(`P2P closed`);
           document.querySelector('.connection-status').innerText = 'Disconnected';
         });
 
@@ -136,7 +137,8 @@
         });
 
         peer.on('error', err => {
-          console.error('WebRTC Error:', err);
+          console.error('P2P Error:', err);
+          document.querySelector('.connection-status').innerText = 'Disconnected';
         });
 
         try {
