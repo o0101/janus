@@ -302,8 +302,8 @@
 
           if (micPerm.state !== 'granted') {
             // Show explainer only if permissions haven't been granted yet
-            alert('Due to a quirk in iOS Safari, we need to request media permissions to enable WebRTC P2P data channels. ' +
-                  'You can cancel immediately after grant for privacy, as we don\'t use the stream.');
+            alert('Due to a quirk in iOS Safari, we need media permissions to enable P2P chat. ' +
+                  'We will stop the tracks immediately, as we don\'t use the stream.');
           }
 
           // Request media access for audio on mobile devices
@@ -311,11 +311,11 @@
 
           // If permissions were not already granted, inform the user they can revoke them
           if (micPerm.state !== 'granted') {
-            alert('Media access granted. You can now revoke these permissions in your browser settings for privacy.');
+            alert('Media access granted. You can click on the red mic icon below to enable Always Allow if you don't want to be asked again. For privacy we will now shut the mic, but after around 10 seconds to give you a chance to set Always Allow if you wish.`);
           }
 
           // Stop the media stream as it's not used
-          stream.getTracks().forEach(track => track.stop());
+          setTimeout(() => stream.getTracks().forEach(track => track.stop()), 15000);
         }
       } catch (error) {
         console.error('Media access error:', error);
