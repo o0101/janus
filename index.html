@@ -93,8 +93,15 @@
     const issueUrl = urlParams.get('issue');
     const alertBoxMessage = `Your p2p locator is copied to your clipboard.\nPlease paste it into a comment and post it on the issue.\nWe will open the issue now. Closing this chat page will cancel the p2p connection.`;
     let peer;
+    let chatWindow;
+    let input;
+    let status;
 
     document.addEventListener('DOMContentLoaded', () => {
+      chatWindow = document.getElementById('chat-window');
+      input = document.getElementById('chat-input');
+      status = document.querySelector('.connection-status');
+
       if (signalData) {
         peer = new SimplePeer({ trickle: false, initiator: false });
 
@@ -110,14 +117,15 @@
 
         peer.on('connect', () => {
           console.log('Connected to peer!');
-          document.querySelector('.connection-status').innerText = 'Connected';
+          status.innerText = 'Connected';
+          chatWindow.value = "";
           window.focus();
           alert('Connected');
         });
 
         peer.on('close', () => {
           console.info(`P2P closed`);
-          document.querySelector('.connection-status').innerText = 'Disconnected';
+          status.innerText = 'Disconnected';
         });
 
         peer.on('data', data => {
@@ -128,7 +136,6 @@
             if (message.type === 'blog') {
               document.getElementById('blog').innerHTML = message.content;
             } else if (message.type === 'chat') {
-              const chatWindow = document.getElementById('chat-window');
               chatWindow.value += `${message.handle || 'Me'}: ${message.msg}\n`;
             }
           } catch(e) {
@@ -138,7 +145,7 @@
 
         peer.on('error', err => {
           console.error('P2P Error:', err);
-          document.querySelector('.connection-status').innerText = 'Disconnected';
+          status.innerText = 'Disconnected';
         });
 
         try {
@@ -153,11 +160,9 @@
     });
 
     document.getElementById('send-button').addEventListener('click', () => {
-      const input = document.getElementById('chat-input');
       const message = input.value.trim().substring(0, 140); // Limit to 140 chars
       if (message && peer) {
         peer.send(JSON.stringify({ type: 'chat', msg: message }));
-        const chatWindow = document.getElementById('chat-window');
         chatWindow.value += `Me: ${message}\n`; // Display own messages
         input.value = '';
       }
@@ -203,7 +208,7 @@
       };
 
       // Safari needs a user gesture to allow clipboard API
-      if (navigator.userAgent.includes('Safari') && !window.isSecureContext) {
+      if (navigator.userAgent.includes('Safari') || !window.isSecureContext) {
         document.onclick = async () => {
           document.onclick = null; // Remove this handler after the click
           alert('Please tap the screen to copy the locator to your clipboard');
