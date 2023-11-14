@@ -1,94 +1,69 @@
-## Janus - Simple P2P Blog and Developer P2P Chat on GitHUb
+## Janus - Simple P2P Blog and Developer P2P Chat on GitHub
 
-Basic idea is you run a HTML page as a server via WebRTC and interact with it connecting clients via a command-line prompt. Those clients connect by opening an issue on your repo, and performing a basic rain dance to establish the p2p link via the proper ritual. A comment bot guides them through the elaborate dance, and right into your console. Where you can chat with them, defer, kick or ban them if you want.
+Janus represents a breakthrough in developer collaboration, blending WebRTC's peer-to-peer capabilities with GitHub's API. It's a tool that enables developers to host a P2P blog and chat directly from GitHub, transforming how we think about collaboration and real-time communication in the open-source world.
 
-In future we plan to support sending and receiving files to enable collaboration on code. There may be better methods such as opening collaborative editors.
+### What is Janus?
 
-Right now, to request a chat with you, they need to open the issue on your janus repo, but in future we may expand it to work across any of your repos, for example by tagging [janus] in the issue title. 
- 
-It's a weird mix of personal IRC server, p2p anomaly, WebRTC experiment, GitHub experiment, p2p blog, and other nice ideas.
+Janus is all about facilitating direct, real-time interactions between developers. By running a simple HTML page (`page.html`) as a WebRTC server, you can establish live chats with other developers who initiate contact through GitHub issues. This seamless integration with GitHub issues makes Janus a unique tool for developers looking for a decentralized, in-band method of collaboration.
 
-We noticed that a lot of people need to chat in real time in order to collaborate on open source projects and often suggest going "off site" or "out of band" to other platforms. We consider this unnecessary and annyoing and with janus seek to provide an "in band", "on site" way to collaborate on GH open source that's simple, empowering, and decentralized. 
+### Features at a Glance:
 
-While unaffiliated with GH in any way, our hope is that ultimately GitHub will provide a dedicated API end-point and UI affordance for janus signalling data in order to both reduce the use-case overloading of issues as a singalling channel, as well as to streamline the user experience of P2P developer to developer chat on GitHub, leading to increased developer productivity, happiness, empowerment and an overall better developer experiece.
+- **P2P Blog**: Share your thoughts and updates directly from your machine to your audience's browser.
+- **Developer Chat**: Engage in real-time chat with anyone who opens an issue in your Janus-enabled repository.
+- **GitHub API Integration**: Uses GitHub issues as a novel way to initiate and manage P2P connections.
 
-In our opinion, P2P developer chat should be a first-class citizen of GH, but if it's not, we're happy to work with the community of people who want this to build janus into the best it can be. Onward and upward! :) 
+### Project Structure:
 
-Cris, November 18, 2023
+```
+|-- README.md
+|-- index.html
+|-- local-webrtc-backend
+|   |-- page.html
+|   `-- run-page.js
+```
 
-Buenos Aires
+### Getting Started with Janus:
 
-### Description:
+#### Setup
 
-Janus is an innovative project that leverages WebRTC and GitHub's API to create a platform where developers can host a peer-to-peer (P2P) blog and engage in real-time text chats. Initially conceived as a project involving GitHub Actions, it evolved into a system that directly interacts with GitHub's API for polling and commenting on issues, facilitating P2P connections.
+1. Clone the Janus repository.
+2. Locally set up environment variables `GH_ACCESS_TOKEN` and `REPO_URL`.
 
-### How to Use Janus:
+The access token should be a GitHub Personal Access Token scoped to the specific repo of your Janus fork and provided with repository read, and issues read & write access. You can create such tokens under the Developer Settings tab in your GitHub profile settings.
 
-1. **Setup**: Clone the repository and set the required environment variables (`GH_ACCESS_TOKEN` and `REPO_URL`).
-2. **Running Janus**: Launch the `run-page.js` script. This script uses GitHub API to poll your repository for issues and uses them to initiate P2P connections.
-3. **Publishing Blog Content**: Write your blog content in `blog.html`. The content is sent over WebRTC to visitors on your static GitHub Pages site.
-4. **Chatting with Visitors**: Engage in text chats with visitors. The chat interface is available in the console of `run-page.js`.
+#### Running Janus
 
-### Technical Overview:
+1. Start the `./local-webrtc-backend/run-page.js` script.
+2. The script polls your repository for new issues, facilitating P2P connections for chat and blog content sharing. Every open issue is treated as a chat request when you are running the janus backend.
 
-- **WebRTC for P2P Communication**: Establishes direct, peer-to-peer connections between the developer and visitors, facilitating real-time chat and content sharing.
-- **GitHub API for Connection Initiation**: Uses GitHub issues as a medium to start P2P connections. The static GitHub Pages site serves as the client, receiving blog content and chat messages.
-- **Security and Privacy**: Communication is P2P, reducing exposure to third-party servers. However, caution should be exercised, as the system involves direct connections to your machine.
+#### Interacting with Janus
 
-### Security Risks and Limitations:
+- **Blog Content**: Write and serve your blog content through `./local-webrtc-backend/page.html`.
+- **Chat Interface**: Access the chat through the command line interface provided by `run-page.js`.
 
-- **WebRTC Exposure**: Direct P2P connections could potentially expose your local environment. Ensure your system is secure and consider using VPNs or firewalls for additional protection.
-- **GitHub Token Security**: The GitHub token used for polling issues should be handled securely to prevent unauthorized access to your repository.
-- **Content Filtering**: Be cautious about the content shared over the chat, as it's directly transmitted between peers.
-- **Browser Security**: Running in a headless browser with certain security features disabled (like CORS) could have implications depending on your local setup and network environment.
+### Chat Interface Commands
 
-### Getting Started with Janus
+- **`list`**: list connected clients
+- **`reply <username> <... your message...>`**: reply to a connected user
+- **`@<username> <... your message...>`**: alias for reply
+- **`quit`**: exit and shutdown janus back-end. *note: sometimes you need to combine with `Ctrl-C` too!*
+- **`help`**: display commands
 
-#### Setting up Your GitHub Access Token
+### Future Directions:
 
-To use Janus, you'll need a GitHub Access Token with appropriate permissions. This token is used for interacting with the GitHub API – primarily for reading and writing comments on issues. Here's how you can generate your token:
+Janus is an evolving project with goals to expand its capabilities, including file sharing for code collaboration and broader repository support. We aim to streamline the developer experience on GitHub, making P2P interaction a natural part of the platform.
 
-1. **Log in to GitHub**: Visit [GitHub](https://github.com/) and sign in to your account.
+### Why Janus? An In-Band GitHub Solution:
 
-2. **Access Personal Access Tokens Settings**:
-   - Click on your profile picture in the top right corner.
-   - Go to `Settings`.
-   - In the left sidebar, click on `Developer settings`.
-   - Then click on `Personal access tokens`.
+We've observed the frequent need for real-time collaboration in open-source projects, often leading developers off-site to external platforms. Janus seeks to eliminate this diversion, offering an on-site, in-band solution that's simple, empowering, and decentralized.
 
-3. **Generate New Token**:
-   - Click on the `Generate new token` button.
-   - Give your token a name in the `Note` field.
-   - Select the scopes or permissions you want to grant this token. For Janus, you'll need the specific repository that you forked or generated Janues too, as well as the Contents read permission and the Issues read and write permission.
-   - Click `Generate token` at the bottom of the page.
+Our vision extends beyond mere chatting. Imagine sending and receiving files, collaborating on code directly through this platform, or even integrating collaborative editors. The possibilities are limitless!
 
-4. **Copy and Save Your Token**:
-   - **Important**: Copy your new personal access token now. You won't be able to see it again!
-   - Save it in a secure place, as you will need to use this token in the `GH_ACCESS_TOKEN` environment variable.
+Though we're unaffiliated with GitHub, we dream of a day when GitHub embraces Janus, providing a dedicated API endpoint to streamline the user experience. Imagine P2P developer chat as a first-class citizen on GitHub - enhancing productivity, happiness, and the overall developer experience.
 
-#### Cloning and Running Janus
+### Contributing to Janus
 
-1. **Clone the Repository**:
-   ```
-   git clone https://github.com/00000o1/janus.git
-   ```
+Your contributions can help shape the future of Janus. Whether it's code, ideas, or feedback, we welcome your input. 
 
-2. **Set Environment Variables**:
-   - Set `GH_ACCESS_TOKEN` with the token you just generated.
-   - Set `REPO_URL` with the URL of the GitHub repository you're using.
-
-3. **Running Janus**:
-   - Navigate to the Janus directory and run the `./local-webrtc-backend/run-page.js` script.
-   - Follow the instructions in the script to start using Janus.
-
-
-### Future Enhancements:
-
-- **UI Improvements**: Enhance the chat interface for a better user experience.
-- **Advanced Security Features**: Implement additional layers of security and encryption.
-- **Scalability**: Optimize the system for handling multiple simultaneous connections.
-
-### Contribution:
-
-Contributions to Janus are welcome! Whether it's feature enhancements, bug fixes, or documentation, your input is valuable. Please refer to the contribution guidelines for more details.
+Janus is more than just a tool; it's a step towards a more connected and interactive open-source community. Join us in this exciting journey to reshape developer collaboration on GitHub.
 

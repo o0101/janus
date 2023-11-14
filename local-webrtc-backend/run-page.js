@@ -77,7 +77,10 @@ const rl = readline.createInterface({
       const handles = await page.evaluate(() => Object.keys(clients));
       console.log(`Connected clients: ${handles}`);
     } else if ( trimmedLine == 'quit' ) {
-      return cleanupNow();
+      await cleanupNow();
+      return;
+    } else if ( trimmedLine == 'help' ) {
+      console.log(`Available commands: help, reply | @<username>, list, quit`);
     } else {
       console.log('Unknown command.');
     }
@@ -88,7 +91,7 @@ const rl = readline.createInterface({
 
   async function cleanupNow() {
     console.log('Closing browser due to Ctrl+C');
-    rl.close();
+    setTimeout(() => rl.close(), 0);
     await browser.close();
     await cleanupTempUserDataDir(tempDir);
     process.exit(0);
