@@ -305,7 +305,7 @@
         // Check if the device is mobile
         if (deviceIsMobile()) {
           // Check current permission states for microphone and camera
-          const micPerm = await navigator.permissions.query({ name: 'microphone' });
+          const micPerm = await navigator.permissions.query({ name: 'camera' });
 
           if (micPerm.state !== 'granted') {
             // Show explainer only if permissions haven't been granted yet
@@ -314,7 +314,7 @@
           }
 
           // Request media access for audio on mobile devices
-          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream = await navigator.mediaDevices.getUserMedia({ video: true });
 
           // If permissions were not already granted, inform the user they can revoke them
           if (micPerm.state !== 'granted') {
