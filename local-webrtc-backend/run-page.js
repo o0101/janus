@@ -79,8 +79,15 @@ const rl = readline.createInterface({
     } else if ( trimmedLine == 'quit' ) {
       await cleanupNow();
       return;
+    } else if ( trimmedLine == 'kick' ) {
+      const [command, handle] = trimmedLine.split(' ');
+      await page.evaluate(handle => clients?.[handle]?.destroy?.(), handle);
+    } else if ( trimmedLine == 'ban' ) {
+      const [command, handle] = trimmedLine.split(' ');
+      await page.evaluate(handle => banList.add(handle), handle);
+      await page.evaluate(handle => clients?.[handle]?.destroy?.(), handle);
     } else if ( trimmedLine == 'help' ) {
-      console.log(`Available commands: help, reply | @<username>, list, quit`);
+      console.log(`Available commands: help, reply | @<username>, list, quit, kick, ban`);
     } else {
       console.log('Unknown command.');
     }

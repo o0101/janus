@@ -95,6 +95,10 @@ Please note, the access token should be a GitHub Personal Access Token scoped to
 - **`@<username> <... your message...>`**: alias for reply
 - **`quit`**: exit and shutdown janus back-end. *Please note: sometimes you might need to combine `quit` with `Ctrl-C`*
 - **`help`**: display commands
+- **`kick <username>`**: disconnect a user
+- **`ban <username>`**: ban a user for this session
+
+*Note: for perma-bans we suggest using GitHub's block capability. That will prevent users from opening issues in your repository.*
 
 ### Future Directions:
 

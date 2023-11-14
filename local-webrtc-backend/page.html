@@ -63,6 +63,7 @@
       verbose: true,
     };
     const [ username, repoName ] = new URL(repoUrl).pathname.split('/').filter(part => part.length);
+    const banList = new Set();
     let clients = {}; // Map to hold ghUsername to peer mapping
 
     // Function to send message to a specific client
@@ -77,6 +78,8 @@
 
     window.ghAccessToken = ghAccessToken;
     window.repoUrl = repoUrl;
+    window.clients = clients;
+    window.banList = banList;
 
     if (!ghAccessToken) {
       console.error('GitHub access token not found!');
@@ -124,15 +127,20 @@
             if (webrtcResponseComment) {
               DEBUG.verbose && console.log('found webrtc response comment', webrtcResponseComment);
               await processResponseComment(webrtcResponseComment, ghUsername);
-              await closeIssue(issue.number, repoUrl, accessToken); // Close the issue after processing the comment
+              await closeIssue(issue.number, repoUrl, accessToken,  `Alright you should be p2p connected now! It's safe to close this tab now and return to your p2p chat room.`); // Close the issue after processing the comment
             } else if (ownComment) {
               DEBUG.verbose && console.log(`Already responded to issue #${issue.number}.`);
               continue; // Skip this issue as we've already posted a comment
             } else if ( ! inprocessConnections.has(issue.number) ) {
               DEBUG.verbose && console.log(`Posting a connection link`);
-              inprocessConnections.set(issue.number, true);
-              const postComment = createCommentPoster(issue.number, repoUrl, accessToken, ghUsername);
-              await beginConnectionProcess(postComment, ghUsername, issue.number); // Open new connection
+              if ( !banList.has(ghUsername) ) {
+                inprocessConnections.set(issue.number, true);
+                const postComment = createCommentPoster(issue.number, repoUrl, accessToken, ghUsername);
+                await beginConnectionProcess(postComment, ghUsername, issue.number); // Open new connection
+              } else {
+                console.log(`Not accepting a chat from banned user: ${ghUsername}`);
+                closeIssue(issue.number, repoUrl, accessToken, 'Sorry we can\'t server your request right now');
+              }
             } else {
               DEBUG.verbose && console.log(`Connection is already in process via #${issue.number}`);
               continue;
@@ -169,9 +177,9 @@
       return JSON.parse(atob(signalDataString));
     }
 
-    async function closeIssue(issueNumber, repoUrl, accessToken) {
+    async function closeIssue(issueNumber, repoUrl, accessToken, message = 'Closing issue') {
       DEBUG.verbose && console.log(`Posting connected comment and closing issue`);
-      await postCommentToIssue(issueNumber, accessToken, `Alright you should be p2p connected now! It's safe to close this tab now and return to your p2p chat room.`);
+      await postCommentToIssue(issueNumber, accessToken, message);
       setTimeout(async () => {
         const closeIssueUrl = `https://api.github.com/repos/${username}/${repoName}/issues/${issueNumber}`;
         const body = {
@@ -282,7 +290,7 @@
             const message = JSON.parse(data.toString());
             if (message.type === 'chat') {
               // Format the chat message for better readability in the console
-              console.log(`CHAT_MSG [${ghUsername}]: ${message.msg}`);
+              console.log(`CHAT_MSG [${ghUsername}]: ${message.msg.slice(0, 1024)}`);
             } else {
               // For other types of messages, log them as is
               DEBUG.verbose && console.log('Received message:', message);

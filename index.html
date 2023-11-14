@@ -105,7 +105,7 @@
   <div id="chat">
     <textarea id="chat-window" readonly></textarea>
     <div class=input-line>
-      <input required type="text" id="chat-input" placeholder="">
+      <input required type="text" id="chat-input" placeholder="" maxlength=1024>
       <button id="send-button">Send</button>
     </div>
   </div>
@@ -128,12 +128,14 @@
     let chatWindow;
     let input;
     let status;
+    let send;
 
     document.addEventListener('DOMContentLoaded', () => {
       chatWindow = document.getElementById('chat-window');
       input = document.getElementById('chat-input');
       status = document.querySelector('.connection-status');
       progressBar = document.querySelector('.progress-bar');
+      send = document.getElementById('send-button');
 
       if (signalData) {
         peer = new SimplePeer({ trickle: false, initiator: false });
@@ -194,16 +196,23 @@
       } else {
         console.error('No signaling data found in URL.');
       }
+
+      send.addEventListener('click', () => {
+        const message = input.value.trim().substring(0, 1024); // Limit to 1024 chars
+        if (message && peer) {
+          peer.send(JSON.stringify({ type: 'chat', msg: message }));
+          chatWindow.value += `Me: ${message}\n`; // Display own messages
+          input.value = '';
+        }
+      });
+
+      input.addEventListener('keypress', pressed => {
+        if ( pressed.key == "Enter" ) {
+          send.click();
+        }
+      });
     });
 
-    document.getElementById('send-button').addEventListener('click', () => {
-      const message = input.value.trim().substring(0, 140); // Limit to 140 chars
-      if (message && peer) {
-        peer.send(JSON.stringify({ type: 'chat', msg: message }));
-        chatWindow.value += `Me: ${message}\n`; // Display own messages
-        input.value = '';
-      }
-    });
 
     async function copyToClipboard(text, onSuccess) {
       const tryClipboardCopy = async () => {
