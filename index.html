@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Janus - WebRTC Chat and Blog</title>
+  <title>Janus - P2P Blog & Chat</title>
   <script src="https://cdn.jsdelivr.net/npm/simple-peer@9/simplepeer.min.js"></script>
   <style>
     body {
@@ -18,27 +18,36 @@
       border-radius: 4px;
       padding: 10px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+    .input-line {
+      display: flex;
+    }
+    .input-line > * {
+      margin: 0;
     }
     #chat-window {
+      box-sizing: border-box;
       width: 100%;
       height: 300px;
       background-color: #eaeaea;
       border: none;
       padding: 10px;
       overflow-y: auto;
+      overflow-x: hidden;
+      resize: none;
+      border-radius: 0.25rem;
     }
     #chat-input {
-      width: calc(100% - 80px);
+      flex-grow: 1;
       padding: 10px;
-      margin-right: 10px;
       border: 1px solid #ddd;
       border-radius: 4px;
     }
     #send-button {
       background-color: #007bff;
       color: white;
-      padding: 10px 20px;
-      border: none;
       border-radius: 4px;
       cursor: pointer;
     }
@@ -49,6 +58,9 @@
       max-width: 600px;
       margin: 20px auto;
     }
+    :is(input, button):active {
+      outline: 1px solid blue;
+    }
     .connection-status {
       text-align: center;
       margin-top: 20px;
@@ -56,11 +68,11 @@
   </style>
 </head>
 <body>
-  <div class="connection-status">Connecting to Janus...</div>
+  <div class="connection-status">Connecting...</div>
   <div id="chat">
     <textarea id="chat-window" readonly></textarea>
-    <div>
-      <input type="text" id="chat-input" placeholder="Type your message...">
+    <div class=input-line>
+      <input required type="text" id="chat-input" placeholder="">
       <button id="send-button">Send</button>
     </div>
   </div>
@@ -78,7 +90,7 @@
     const urlParams = new URL(location).searchParams;
     const signalData = urlParams.get('data');
     const issueUrl = urlParams.get('issue');
-    const alertBoxMessage = `Connection Ready: The connection data has been copied to your clipboard.\nPlease go to the GitHub issue page (opening now) and paste this data into a comment. Do not close this page - it keeps the connection active.\nPaste the data in a GitHub comment to complete the blog/chat setup.`;
+    const alertBoxMessage = `Your p2p locator is copied to your clipboard.\nPlease paste it into a comment and post it on the issue.\nWe will open the issue now. Closing this chat page will cancel the p2p connection.`;
     let peer;
 
     if (signalData) {
@@ -97,9 +109,13 @@
 
       peer.on('connect', () => {
         console.log('Connected to peer!');
-        document.querySelector('.connection-status').innerText = 'Connected to Janus!';
+        document.querySelector('.connection-status').innerText = 'Connected';
         window.focus();
         alert('Connected');
+      });
+
+      peer.on('close', () => {
+        document.querySelector('.connection-status').innerText = 'Disconnected';
       });
 
       peer.on('data', data => {
