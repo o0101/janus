@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name=viewport content=width=device-width,initial-scale=1>
   <title>Janus - P2P Blog & Chat</title>
   <script src="https://cdn.jsdelivr.net/npm/simple-peer@9/simplepeer.min.js"></script>
   <style>
@@ -97,26 +98,13 @@
       if (signalData) {
         peer = new SimplePeer({ trickle: false, initiator: false });
 
-        peer.on('signal', data => {
+        peer.on('signal', async data => {
           const signalData = btoa(JSON.stringify(data));
           const janusLink = `janus://p2p_locator/${signalData}`;
-          navigator.clipboard.writeText(janusLink).then(() => {
+          await copyToClipboard(janusLink, () => {
             console.log('Signal data copied to clipboard.');
             alert(alertBoxMessage);
             window.open(issueUrl, '_blank');
-          }).catch(err => {
-            console.error('Could not copy signal data to clipboard:', err);
-            const chatWindow = document.querySelector('#chat-window');
-            chatWindow.value = janusLink;
-            chatWindow.focus();
-            chatWindow.select();
-            try {
-              document.execCommand('copy');
-              alert(alertBoxMessage);
-              window.open(issueUrl, '_blank');
-            } catch(e) {
-              console.error(`Unable to copy clipboard data`, e);
-            }
           });
         });
 
@@ -172,6 +160,57 @@
         input.value = '';
       }
     });
+
+    async function copyToClipboard(text, onSuccess) {
+      const tryClipboardCopy = async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          onSuccess();
+        } catch (err) {
+          console.error('Could not copy signal data to clipboard:', err);
+          // Fallback to execCommand in Safari or manual copy
+          tryExecCommandCopy();
+        }
+      };
+
+      const tryExecCommandCopy = () => {
+        const chatWindow = document.querySelector('#chat-window');
+        chatWindow.value = text;
+        chatWindow.focus();
+        chatWindow.select();
+        try {
+          if (document.execCommand('copy')) {
+            onSuccess();
+          } else {
+            throw new Error('ExecCommand failed');
+          }
+        } catch (e) {
+          console.error('Fallback copy method failed', e);
+          alert('Please manually copy the selected text in the textbox');
+          setupManualCopyListener();
+        }
+      };
+
+      const setupManualCopyListener = () => {
+        document.addEventListener('copy', function onCopy(event) {
+          if (event.target === document.querySelector('#chat-window')) {
+            document.removeEventListener('copy', onCopy);
+            onSuccess();
+          }
+        });
+      };
+
+      // Safari needs a user gesture to allow clipboard API
+      if (navigator.userAgent.includes('Safari') && !window.isSecureContext) {
+        document.onclick = async () => {
+          document.onclick = null; // Remove this handler after the click
+          alert('Please tap the screen to copy the locator to your clipboard');
+          await tryClipboardCopy();
+        };
+      } else {
+        await tryClipboardCopy();
+      }
+    }
   </script>
 </body>
 </html>
