@@ -65,7 +65,14 @@
     </div>
   </div>
   <section id="blog"></section> <!-- Blog content will be inserted here -->
-
+  <script>
+    window.addEventListener('beforeunload', function (e) {
+      // Cancel the event
+      e.preventDefault(); 
+      // Chrome requires returnValue to be set
+      e.returnValue = 'Leaving this page will destroy the P2P connection. Are you sure?';
+    });
+  </script>
   <script>
     const Decoder = new TextDecoder('utf-8');
     const urlParams = new URL(location).searchParams;

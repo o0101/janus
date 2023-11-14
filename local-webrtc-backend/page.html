@@ -58,6 +58,7 @@
     const ghCreds = JSON.parse(decodeURIComponent(urlParams.get('ghCreds')));
     const ghAccessToken = ghCreds.GH_ACCESS_TOKEN;
     const repoUrl = ghCreds.REPO_URL;
+    const inprocessConnections = new Map();
     const DEBUG = {
       verbose: true,
     };
@@ -87,7 +88,7 @@
     async function pollGitHubAPI(repoUrl, accessToken) {
       repoUrl = new URL(repoUrl.replace(/\/$/, '')).href;
       let lastChecked = new Date().toISOString();
-      let processedIssues = new Map(); // Map to keep track of processed issues and comment check times
+      let commentCheckTimes = new Map(); // Map to keep track of processed issues and comment check times
 
       setInterval(async () => {
         DEBUG.verbose && console.log(`Checking issues`);
@@ -104,15 +105,18 @@
           DEBUG.verbose && console.log('Updated issues:', issues.map(issue => `#${issue.number}`));
           for (const issue of issues) {
             const ghUsername = issue.user.login; // Extract GitHub username
-            let lastCheckedForComments = processedIssues.get(issue.number) || startTime;
+            let lastCheckedForComments = commentCheckTimes.get(issue.number) || startTime;
             DEBUG.verbose && console.log(`Checking comments for issue #${issue.number}`);
+
             const commentsResponse = await fetch(`${issue.comments_url}?since=${lastCheckedForComments}`, {
               headers: {
                 'Authorization': `token ${accessToken}`,
                 'Accept': 'application/vnd.github.v3+json'
               }
             });
-            processedIssues.set(issue.number, lastCheckedForComments);
+
+            lastCheckedForComments = new Date().toISOString();
+            commentCheckTimes.set(issue.number, lastCheckedForComments);
             const comments = await commentsResponse.json();
             const webrtcResponseComment = comments.find(comment => isResponseComment(comment));
             const ownComment = comments.find(comment => comment.user.login === username && comment.body.includes('janus://click_to_dial'));
@@ -124,10 +128,14 @@
             } else if (ownComment) {
               DEBUG.verbose && console.log(`Already responded to issue #${issue.number}.`);
               continue; // Skip this issue as we've already posted a comment
-            } else {
+            } else if ( ! inprocessConnections.has(issue.number) ) {
               DEBUG.verbose && console.log(`Posting a connection link`);
+              inprocessConnections.set(issue.number, true);
               const postComment = createCommentPoster(issue.number, repoUrl, accessToken, ghUsername);
-              await beginConnectionProcess(postComment, ghUsername); // Open new connection
+              await beginConnectionProcess(postComment, ghUsername, issue.number); // Open new connection
+            } else {
+              DEBUG.verbose && console.log(`Connection is already in process via #${issue.number}`);
+              continue;
             }
 
             await sleep(333);
@@ -227,7 +235,7 @@
       }
     }
 
-    async function beginConnectionProcess(postComment, ghUsername) {
+    async function beginConnectionProcess(postComment, ghUsername, issueNumber) {
       // Create a new peer as the initiator
       let resolve;
       const pr = new Promise(res => resolve = res);
@@ -255,8 +263,9 @@
         // When peer connection is established
         peer.on('connect', () => {
           console.log('New client connected!', ghUsername);
+          inprocessConnections.delete(issueNumber);
           dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
-          dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello ${ghUsername} from the WebRTC "server"!`, handle: username}));
+          dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello @${ghUsername} from my personal WebRTC "server"!`, handle: username}));
           dataChannel.send(JSON.stringify({type: 'blog', content: document.querySelector('section#blog').outerHTML }));
         });
 
