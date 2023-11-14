@@ -142,6 +142,7 @@
           const janusLink = `janus://p2p_locator/${signalData}`;
           requestAnimationFrame(() => {
             status.innerText = "p2p locator ready!";
+            status.style.cursor = 'default';
             progressBar.remove();
           });
           await copyToClipboard(janusLink, () => {

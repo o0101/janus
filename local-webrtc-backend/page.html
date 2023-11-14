@@ -204,7 +204,7 @@
     function createCommentPoster(issueNumber, repoUrl, accessToken, ghUsername) {
       return async (signalData) => {
         const staticSiteUrl = formatStaticSiteUrl(repoUrl, signalData, `${repoUrl}/issues/${issueNumber}`);
-        const commentText = `Hey @${ghUsername}! I might be available now. So we can start to chat, please post your p2p locator in a comment below.\nDon't worry, you'll get your locator in the next step.\n\nClick this link now to go to the next step and get your p2p locator: [janus://my_p2p_locator_for/${username}](${staticSiteUrl})`;
+        const commentText = `Hey @${ghUsername}! I might be available now. So we can start our p2p chat, please post your p2p locator in a comment below.\nDon't worry, you'll get your locator in the next step.\n\nClick this link now to go to the next step and get your p2p locator: [janus://my_p2p_locator_for/${username}](${staticSiteUrl})`;
         await postCommentToIssue(issueNumber, accessToken, commentText);
       };
     }

@@ -1,3 +1,5 @@
+![Janus Logo](.readme-assets/janus-logo.png)
+
 ## Janus - Simple P2P Blog and Developer P2P Chat on GitHub
 
 Janus represents a breakthrough in developer collaboration, blending WebRTC's peer-to-peer capabilities with GitHub's API. It's a tool that enables developers to host a P2P blog and chat directly from GitHub, transforming how we think about collaboration and real-time communication in the open-source world.
@@ -44,6 +46,11 @@ To help you make the most of Janus, here's a quick executive summary of key poin
 Our vision for Janus extends into realms yet unexplored. From file transfers, direct code collaboration, to integrating collaborative editors – the potential is limitless. Unaffiliated with GitHub, we nonetheless aspire to a future where Janus and GitHub are more closely intertwined, with dedicated API support to enhance this unique developer experience.
 
 Stay tuned for more updates as we continue to shape the future of GitHub collaboration with Janus! 🚀💻🌐
+
+### What is P2P ?
+
+P2P means point-to-point, and it indicates a direct connection between parties, that avoids going through any intermediate servers like a regular centralized chat service. In Janus, P2P is enabled by WebRTC data channels. While there are some edge cases that go through servers that help to route the traffic, in most cases P2P via WebRTC is a direct message channel between the two parties. It's also worth remembering that WebRTC is encrypted and secure.
+
 
 ### Project Structure:
 
