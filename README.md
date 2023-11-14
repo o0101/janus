@@ -46,7 +46,7 @@ The access token should be a GitHub Personal Access Token scoped to the specific
 - **`list`**: list connected clients
 - **`reply <username> <... your message...>`**: reply to a connected user
 - **`@<username> <... your message...>`**: alias for reply
-- **`quit`**: exit and shutdown janus back-end. *note: sometimes you need to combine with `Ctrl-C` too!*
+- **`quit`**: exit and shutdown janus back-end. *Please note: sometimes you might need to combine `quit` with `Ctrl-C`*
 - **`help`**: display commands
 
 ### Future Directions:

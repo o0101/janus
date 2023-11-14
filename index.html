@@ -184,7 +184,7 @@
         });
 
         try {
-          const decodedData = JSON.parse(signalData);
+          const decodedData = JSON.parse(atob(signalData));
           peer.signal(decodedData);
         } catch (err) {
           console.error('Error parsing signaling data:', err);

@@ -172,7 +172,7 @@
     async function closeIssue(issueNumber, repoUrl, accessToken) {
       DEBUG.verbose && console.log(`Posting connected comment and closing issue`);
       await postCommentToIssue(issueNumber, accessToken, `Alright you should be p2p connected now! It's safe to close this tab now and return to your p2p chat room.`);
-      setTimeout(() => {
+      setTimeout(async () => {
         const closeIssueUrl = `https://api.github.com/repos/${username}/${repoName}/issues/${issueNumber}`;
         const body = {
           state: 'closed'
