@@ -98,6 +98,8 @@
       peer.on('connect', () => {
         console.log('Connected to peer!');
         document.querySelector('.connection-status').innerText = 'Connected to Janus!';
+        window.focus();
+        alert('Connected');
       });
 
       peer.on('data', data => {
