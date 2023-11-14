@@ -131,7 +131,7 @@
     let status;
     let send;
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       chatWindow = document.getElementById('chat-window');
       input = document.getElementById('chat-input');
       status = document.querySelector('.connection-status');
@@ -139,6 +139,9 @@
       send = document.getElementById('send-button');
 
       if (signalData) {
+        if ( isSafariBrowser() ) {
+          await requestMediaAccess();
+        }
         peer = new SimplePeer({ trickle: false, initiator: false });
 
         peer.on('signal', async data => {
