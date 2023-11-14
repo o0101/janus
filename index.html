@@ -232,7 +232,6 @@
       });
     });
 
-
     async function copyToClipboard(text, onSuccess) {
       const tryClipboardCopy = async () => {
         try {
@@ -293,6 +292,7 @@
       return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     }
 
+    // this func is needed due to a quirk in mobile Safari 
     async function requestMediaAccess() {
       try {
         // Check if the device is mobile
@@ -319,6 +319,7 @@
         }
       } catch (error) {
         console.error('Media access error:', error);
+        alert('Unfortunately, in Mobile Safari we can not create the P2P connection without media access. You may reload to try again if you wish.');
         throw new Error('Failed to get media access');
       }
     }
@@ -327,7 +328,6 @@
     function deviceIsMobile() {
       return /iPhone|iPad|iPod/i.test(navigator.userAgent);
     }
-
   </script>
 </body>
 </html>
