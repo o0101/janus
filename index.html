@@ -289,6 +289,42 @@
     function isSafariBrowser() {
       return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     }
+
+    async function requestMediaAccess() {
+      try {
+        // Check if the device is mobile
+        if (deviceIsMobile()) {
+          // Check current permission states for microphone and camera
+          const micPerm = await navigator.permissions.query({ name: 'microphone' });
+
+          if (micPerm.state !== 'granted') {
+            // Show explainer only if permissions haven't been granted yet
+            alert('We need to request media permissions to enable WebRTC data channels. ' +
+                  'You can cancel immediately after grant for privacy, as we don\'t use the stream.');
+          }
+
+          // Request media access for audio on mobile devices
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+          // If permissions were not already granted, inform the user they can revoke them
+          if (micPerm.state !== 'granted') {
+            alert('Media access granted. You can now revoke these permissions in your browser settings for privacy.');
+          }
+
+          // Stop the media stream as it's not used
+          stream.getTracks().forEach(track => track.stop());
+        }
+      } catch (error) {
+        console.error('Media access error:', error);
+        throw new Error('Failed to get media access');
+      }
+    }
+
+    // Utility function to determine if the device is mobile
+    function deviceIsMobile() {
+      return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
   </script>
 </body>
 </html>
