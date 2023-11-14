@@ -2,11 +2,17 @@
 
 ## Janus - Simple P2P Blog and Developer P2P Chat on GitHub
 
-Janus represents a breakthrough in developer collaboration, blending WebRTC's peer-to-peer capabilities with GitHub's API. It's a tool that enables developers to host a P2P blog and chat directly from GitHub, transforming how we think about collaboration and real-time communication in the open-source world.
+Janus combines WebRTC's peer-to-peer capabilities with GitHub's API to create a unique platform for developer collaboration. This tool allows developers to host a P2P blog and engage in chat sessions directly through GitHub, offering a new approach to collaboration and real-time communication.
 
 ### What is Janus?
 
-Janus is all about facilitating direct, real-time interactions between developers. By running a simple HTML page (`page.html`) as a WebRTC server, you can establish live chats with other developers who initiate contact through GitHub issues. This seamless integration with GitHub issues makes Janus a unique tool for developers looking for a decentralized, in-band method of collaboration.
+Janus serves blog content, and chat, over a P2P connection. You can add blog content to the blog section in `./local-webrtc-backend/page.html`
+
+Janus is all about facilitating direct, real-time interactions between developers. By running a simple HTML page (`page.html`) as a WebRTC server that handles a blog and chat, you can establish live chats with other developers who initiate contact through GitHub issues. 
+
+If you run a Janus back-end chat messages reach you in the terminal and that's where you respond to them. For connecting clients, they chat through a static web interface on GitHub pages.
+
+This seamless integration with GitHub issues makes Janus a unique tool for developers looking for a decentralized, in-band method of collaboration.
 
 ### Features at a Glance:
 
@@ -66,10 +72,11 @@ P2P means point-to-point, and it indicates a direct connection between parties, 
 
 #### Setup
 
-1. Clone the Janus repository.
+1. Clone the Janus repository, and switch on GitHub pages. 
 2. Locally set up environment variables `GH_ACCESS_TOKEN` and `REPO_URL`.
+3. **[optional]** Add an **Office Hours: ** line to the top of your README (or to a pinned issue) indicating when you'll be online to chat (erm, unless it's always :laughing:)
 
-The access token should be a GitHub Personal Access Token scoped to the specific repo of your Janus fork and provided with repository read, and issues read & write access. You can create such tokens under the Developer Settings tab in your GitHub profile settings.
+Please note, the access token should be a GitHub Personal Access Token scoped to the specific repo of your Janus fork and provided with repository read, and issues read & write access. You can create such tokens under the Developer Settings tab in your GitHub profile settings.
 
 #### Running Janus
 
