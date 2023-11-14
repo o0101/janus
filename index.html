@@ -93,71 +93,73 @@
     const alertBoxMessage = `Your p2p locator is copied to your clipboard.\nPlease paste it into a comment and post it on the issue.\nWe will open the issue now. Closing this chat page will cancel the p2p connection.`;
     let peer;
 
-    if (signalData) {
-      peer = new SimplePeer({ trickle: false, initiator: false });
+    document.addEventListener('DOMContentLoaded', () => {
+      if (signalData) {
+        peer = new SimplePeer({ trickle: false, initiator: false });
 
-      peer.on('signal', data => {
-        const signalData = btoa(JSON.stringify(data));
-        const janusLink = `janus://p2p_locator/${signalData}`;
-        navigator.clipboard.writeText(janusLink).then(() => {
-          console.log('Signal data copied to clipboard.');
-          alert(alertBoxMessage);
-          window.open(issueUrl, '_blank');
-        }).catch(err => {
-          console.error('Could not copy signal data to clipboard:', err);
-          const chatWindow = document.querySelector('#chat-window').value = janusLink;
-          chatWindow.focus();
-          chatWindow.select();
-          try {
-            document.execCommand('copy');
+        peer.on('signal', data => {
+          const signalData = btoa(JSON.stringify(data));
+          const janusLink = `janus://p2p_locator/${signalData}`;
+          navigator.clipboard.writeText(janusLink).then(() => {
+            console.log('Signal data copied to clipboard.');
             alert(alertBoxMessage);
             window.open(issueUrl, '_blank');
+          }).catch(err => {
+            console.error('Could not copy signal data to clipboard:', err);
+            const chatWindow = document.querySelector('#chat-window').value = janusLink;
+            chatWindow.focus();
+            chatWindow.select();
+            try {
+              document.execCommand('copy');
+              alert(alertBoxMessage);
+              window.open(issueUrl, '_blank');
+            } catch(e) {
+              console.error(`Unable to copy clipboard data`, e);
+            }
+          });
+        });
+
+        peer.on('connect', () => {
+          console.log('Connected to peer!');
+          document.querySelector('.connection-status').innerText = 'Connected';
+          window.focus();
+          alert('Connected');
+        });
+
+        peer.on('close', () => {
+          document.querySelector('.connection-status').innerText = 'Disconnected';
+        });
+
+        peer.on('data', data => {
+          data = data.toString();
+          console.log('Received message:', data);
+          try {
+            const message = JSON.parse(data);
+            if (message.type === 'blog') {
+              document.getElementById('blog').innerHTML = message.content;
+            } else if (message.type === 'chat') {
+              const chatWindow = document.getElementById('chat-window');
+              chatWindow.value += `${message.handle || 'Me'}: ${message.msg}\n`;
+            }
           } catch(e) {
-            console.error(`Unable to copy clipboard data`, e);
+            console.warn(`Could not parse message:`, e, JSON.stringify(data).slice(0, 140));
           }
         });
-      });
 
-      peer.on('connect', () => {
-        console.log('Connected to peer!');
-        document.querySelector('.connection-status').innerText = 'Connected';
-        window.focus();
-        alert('Connected');
-      });
+        peer.on('error', err => {
+          console.error('WebRTC Error:', err);
+        });
 
-      peer.on('close', () => {
-        document.querySelector('.connection-status').innerText = 'Disconnected';
-      });
-
-      peer.on('data', data => {
-        data = data.toString();
-        console.log('Received message:', data);
         try {
-          const message = JSON.parse(data);
-          if (message.type === 'blog') {
-            document.getElementById('blog').innerHTML = message.content;
-          } else if (message.type === 'chat') {
-            const chatWindow = document.getElementById('chat-window');
-            chatWindow.value += `${message.handle || 'Me'}: ${message.msg}\n`;
-          }
-        } catch(e) {
-          console.warn(`Could not parse message:`, e, JSON.stringify(data).slice(0, 140));
+          const decodedData = JSON.parse(signalData);
+          peer.signal(decodedData);
+        } catch (err) {
+          console.error('Error parsing signaling data:', err);
         }
-      });
-
-      peer.on('error', err => {
-        console.error('WebRTC Error:', err);
-      });
-
-      try {
-        const decodedData = JSON.parse(signalData);
-        peer.signal(decodedData);
-      } catch (err) {
-        console.error('Error parsing signaling data:', err);
+      } else {
+        console.error('No signaling data found in URL.');
       }
-    } else {
-      console.error('No signaling data found in URL.');
-    }
+    });
 
     document.getElementById('send-button').addEventListener('click', () => {
       const input = document.getElementById('chat-input');
