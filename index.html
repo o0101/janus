@@ -311,7 +311,7 @@
 
           // If permissions were not already granted, inform the user they can revoke them
           if (micPerm.state !== 'granted') {
-            alert('Media access granted. You can click on the red mic icon below to enable Always Allow if you don't want to be asked again. For privacy we will now shut the mic, but after around 10 seconds to give you a chance to set Always Allow if you wish.`);
+            alert('Media access granted. You can click on the red mic icon below to enable Always Allow if you don't want to be asked again. For privacy we will shut your mic as soon as the connection is made, and the red mic icon will disappear. But for convenience, we'll give you around 10 seconds after that, in case you wish to click the icon to set Always Allow.`);
           }
 
           // Stop the media stream as it's not used
