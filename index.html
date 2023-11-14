@@ -5,7 +5,7 @@
   <meta name=viewport content=width=device-width,initial-scale=1>
   <link rel=icon href=./favicon.ico>
   <title>Janus - P2P Blog & Chat</title>
-  <script src="https://cdn.jsdelivr.net/npm/latent-peer@10.0.8/build.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/simple-peer@9/simplepeer.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -143,81 +143,98 @@
         if ( isSafariBrowser() ) {
           await requestMediaAccess();
         }
-        peer = new SimplePeer({ 
-          trickle: false, 
-          initiator: false,
-        });
 
-        peer.on('signal', async data => {
-          const signalData = btoa(JSON.stringify(data));
-          const janusLink = `janus://p2p_locator/${signalData}`;
-          requestAnimationFrame(() => {
-            status.innerText = "p2p locator ready!";
-            status.style.cursor = 'default';
-            progressBar.remove();
+        while(! (await establishConnection())) {
+          console.log(`Retrying in 3 seconds...`);
+          await sleep(3000);
+        }
+
+        async function establishConnection() {
+          let resolve;
+          const pr = new Promise(res => resolve);
+
+          peer = new SimplePeer({ 
+            trickle: false, 
+            initiator: false,
           });
-          await copyToClipboard(janusLink, () => {
-            alert(alertBoxMessage);
-            window.open(issueUrl, '_blank');
+
+          peer.on('signal', async data => {
+            const signalData = btoa(JSON.stringify(data));
+            const janusLink = `janus://p2p_locator/${signalData}`;
+            requestAnimationFrame(() => {
+              status.innerText = "p2p locator ready!";
+              status.style.cursor = 'default';
+              progressBar.remove();
+            });
+            await copyToClipboard(janusLink, () => {
+              alert(alertBoxMessage);
+              window.open(issueUrl, '_blank');
+            });
           });
-        });
 
-        peer.on('connect', () => {
-          console.log('Connected to peer!');
-          status.innerText = 'Connected';
-          chatWindow.value = "";
-          window.focus();
-          let hasAlerted = false;
+          peer.on('connect', () => {
+            console.log('Connected to peer!');
+            status.innerText = 'Connected';
+            chatWindow.value = "";
+            window.focus();
+            let hasAlerted = false;
 
-          // Stop the media stream as it's not used
-          setTimeout(() => stream.getTracks().forEach(track => track.stop()), 15000);
+            setTimeout(() => resolve(true), 0);
 
-          function showAlert() {
-            if (!hasAlerted) {
-              alert('Connected');
-              hasAlerted = true;
+            // Stop the media stream as it's not used
+            setTimeout(() => stream.getTracks().forEach(track => track.stop()), 15000);
+
+            function showAlert() {
+              if (!hasAlerted) {
+                setTimeout(() => alert('Connected'), 0);
+                hasAlerted = true;
+              }
             }
-          }
 
-          document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === 'visible') {
-              showAlert();
+            document.addEventListener("visibilitychange", () => {
+              if (document.visibilityState === 'visible') {
+                showAlert();
+              }
+            }, { once: true });
+
+            window.addEventListener("focus", showAlert, { once: true });
+          });
+
+          peer.on('data', data => {
+            data = data.toString();
+            console.log('Received message:', data);
+            try {
+              const message = JSON.parse(data);
+              if (message.type === 'blog') {
+                document.getElementById('blog').innerHTML = message.content;
+              } else if (message.type === 'chat') {
+                chatWindow.value += `${message.handle || 'Me'}: ${message.msg}\n`;
+              }
+            } catch(e) {
+              console.warn(`Could not parse message:`, e, JSON.stringify(data).slice(0, 140));
             }
-          }, { once: true });
+          });
 
-          window.addEventListener("focus", showAlert, { once: true });
-        });
+          peer.on('close', () => {
+            console.info(`P2P closed`);
+            resolve(false);
+            setTimeout(() => stream.getTracks().forEach(track => track.stop()), 0);
+            status.innerText = 'Disconnected';
+          });
 
-        peer.on('close', () => {
-          console.info(`P2P closed`);
-          status.innerText = 'Disconnected';
-        });
+          peer.on('error', err => {
+            console.error('P2P Error:', err);
+            resolve(false); 
+            setTimeout(() => stream.getTracks().forEach(track => track.stop()), 0);
+            status.innerText = 'Disconnected';
+          });
 
-        peer.on('data', data => {
-          data = data.toString();
-          console.log('Received message:', data);
           try {
-            const message = JSON.parse(data);
-            if (message.type === 'blog') {
-              document.getElementById('blog').innerHTML = message.content;
-            } else if (message.type === 'chat') {
-              chatWindow.value += `${message.handle || 'Me'}: ${message.msg}\n`;
-            }
-          } catch(e) {
-            console.warn(`Could not parse message:`, e, JSON.stringify(data).slice(0, 140));
+            const decodedData = JSON.parse(atob(signalData));
+            peer.signal(decodedData);
+          } catch (err) {
+            console.error('Error parsing signaling data:', err);
           }
-        });
-
-        peer.on('error', err => {
-          console.error('P2P Error:', err);
-          status.innerText = 'Disconnected';
-        });
-
-        try {
-          const decodedData = JSON.parse(atob(signalData));
-          peer.signal(decodedData);
-        } catch (err) {
-          console.error('Error parsing signaling data:', err);
         }
       } else {
         console.error('No signaling data found in URL.');
