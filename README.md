@@ -9,7 +9,7 @@ Janus is all about facilitating direct, real-time interactions between developer
 ### Features at a Glance:
 
 - **P2P Blog**: Share your thoughts and updates directly from your machine to your audience's browser.
-- **Developer Chat**: Engage in real-time chat with anyone who opens an issue in your Janus-enabled repository.
+- **Developer Chat**: Engage in real-time chat with anyone who opens (or re-opens) an issue in your Janus-enabled repository when you're running the backend.
 - **GitHub API Integration**: Uses GitHub issues as a novel way to initiate and manage P2P connections.
 
 ### Introducing Janus - The Next Evolution in GitHub Collaboration
@@ -28,7 +28,7 @@ We're happy to review contributions in these areas for possible inclusion! Of co
 
 To help you make the most of Janus, here's a quick executive summary of key points:
 
-1. **Running Janus**: As a project maintainer, simply run the backend following the instructions provided here. For other developers seeking to chat with the maintainer, open an issue when the maintainer is available for chat. A chat post link will be generated in the issue, which, when clicked, opens the chat in your browser, connecting you with the maintainer.
+1. **Running Janus**: As a project maintainer, simply run the backend following the instructions provided here. For other developers seeking to chat with the maintainer, open (or re-open) an issue when the maintainer is available for chat. A chat post link will be generated in the issue, which, when clicked, opens the chat in your browser, connecting you with the maintainer.
 
 2. **Practical Applications of Janus**:
    - **Project Office Hours**: Schedule regular times for open discussion, creating a personal and private environment for project-related conversations.
