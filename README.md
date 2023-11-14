@@ -1,4 +1,4 @@
-![Janus Logo](.readme-assets/janus-logo.png)
+<img src=.readme-assets/janus-logo.png alt="Janus Logo" width=500>
 
 ## Janus - Simple P2P Blog and Developer P2P Chat on GitHub
 
