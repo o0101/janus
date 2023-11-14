@@ -59,7 +59,7 @@
     const ghAccessToken = ghCreds.GH_ACCESS_TOKEN;
     const repoUrl = ghCreds.REPO_URL;
     const DEBUG = {
-      verbose: false,
+      verbose: true,
     };
     const [ username, repoName ] = new URL(repoUrl).pathname.split('/').filter(part => part.length);
     let clients = {}; // Map to hold ghUsername to peer mapping
@@ -90,6 +90,7 @@
       let processedIssues = new Map(); // Map to keep track of processed issues and comment check times
 
       setInterval(async () => {
+        DEBUG.verbose && console.log(`Checking issues`);
         const response = await fetch(`https://api.github.com/repos/${username}/${repoName}/issues?since=${lastChecked}&state=open`, {
           headers: {
             'Authorization': `token ${accessToken}`,
@@ -104,6 +105,7 @@
           for (const issue of issues) {
             const ghUsername = issue.user.login; // Extract GitHub username
             let lastCheckedForComments = processedIssues.get(issue.number) || startTime;
+            DEBUG.verbose && console.log(`Checking comments for issue #${issue.number}`);
             const commentsResponse = await fetch(`${issue.comments_url}?since=${lastCheckedForComments}`, {
               headers: {
                 'Authorization': `token ${accessToken}`,
@@ -123,11 +125,12 @@
               DEBUG.verbose && console.log(`Already responded to issue #${issue.number}.`);
               continue; // Skip this issue as we've already posted a comment
             } else {
+              DEBUG.verbose && console.log(`Posting a connection link`);
               const postComment = createCommentPoster(issue.number, repoUrl, accessToken, ghUsername);
               await beginConnectionProcess(postComment, ghUsername); // Open new connection
             }
 
-            await sleep(200);
+            await sleep(333);
           }
         }
       }, 15051);
@@ -186,7 +189,7 @@
       }
     }
 
-    function reateCommentPoster(issueNumber, repoUrl, accessToken, ghUsername) {
+    function createCommentPoster(issueNumber, repoUrl, accessToken, ghUsername) {
       return async (signalData) => {
         const staticSiteUrl = formatStaticSiteUrl(repoUrl, signalData, `${repoUrl}/issues/${issueNumber}`);
         const commentText = `Hey @${ghUsername}! I'm available to chat. Click this link to dial me: [janus://click_to_dial/${username}](${staticSiteUrl})\nThen paste the p2p locator you get, below!`;
@@ -228,6 +231,7 @@
       let resolve;
       const pr = new Promise(res => resolve = res);
       try {
+        DEBUG.verbose && console.log(`Creating peer`);
         const peer = new SimplePeer({ 
           initiator: true, 
           trickle: false,
@@ -258,6 +262,7 @@
         // Receiving messages on the data channel
         peer.on('data', data => {
           try {
+            DEBUG.verbose && console.log(`Message received`);
             const message = JSON.parse(data.toString());
             if (message.type === 'chat') {
               // Format the chat message for better readability in the console

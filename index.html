@@ -2,47 +2,79 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WebRTC Client Page</title>
+  <title>Janus - WebRTC Chat and Blog</title>
   <script src="https://cdn.jsdelivr.net/npm/simple-peer@9/simplepeer.min.js"></script>
   <style>
-    #blog, #chat {
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    #chat {
       max-width: 600px;
       margin: 20px auto;
-      font-family: Arial, sans-serif;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     #chat-window {
       width: 100%;
-      height: 200px;
-      background-color: #f0f0f0;
+      height: 300px;
+      background-color: #eaeaea;
+      border: none;
+      padding: 10px;
+      overflow-y: auto;
     }
     #chat-input {
-      width: calc(100% - 60px);
+      width: calc(100% - 80px);
+      padding: 10px;
+      margin-right: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    #send-button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #send-button:hover {
+      background-color: #0056b3;
+    }
+    #blog {
+      max-width: 600px;
+      margin: 20px auto;
+    }
+    .connection-status {
+      text-align: center;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>WebRTC Client</h1>
-  <section id="blog"></section> <!-- Blog content will be inserted here -->
+  <div class="connection-status">Connecting to Janus...</div>
   <div id="chat">
     <textarea id="chat-window" readonly></textarea>
-    <input type="text" id="chat-input" placeholder="Type your message...">
-    <button id="send-button">Send</button>
+    <div>
+      <input type="text" id="chat-input" placeholder="Type your message...">
+      <button id="send-button">Send</button>
+    </div>
   </div>
-
-  <script>
-    
-  </script>
+  <section id="blog"></section> <!-- Blog content will be inserted here -->
 
   <script>
     const Decoder = new TextDecoder('utf-8');
     const urlParams = new URL(location).searchParams;
     const signalData = urlParams.get('data');
     const issueUrl = urlParams.get('issue');
-    const alertBoxMessage = `Connection Ready: The connection data has been copied to your clipboard.\nPlease go to the GitHub issue page (opening now) and paste this data into a comment. Do not close this page - it keeps the connection active.\nPaste the data in a GitHub comment to complete the blog/chat setup.`
+    const alertBoxMessage = `Connection Ready: The connection data has been copied to your clipboard.\nPlease go to the GitHub issue page (opening now) and paste this data into a comment. Do not close this page - it keeps the connection active.\nPaste the data in a GitHub comment to complete the blog/chat setup.`;
     let peer;
 
     if (signalData) {
-      // idea could we use email via mailto links as a signalling channel? :)
       peer = new SimplePeer({ trickle: false, initiator: false });
 
       peer.on('signal', data => {
@@ -58,7 +90,7 @@
 
       peer.on('connect', () => {
         console.log('Connected to peer!');
-        // Connection is established. You can now start sending or receiving data.
+        document.querySelector('.connection-status').innerText = 'Connected to Janus!';
       });
 
       peer.on('data', data => {
@@ -70,7 +102,7 @@
             document.getElementById('blog').innerHTML = message.content;
           } else if (message.type === 'chat') {
             const chatWindow = document.getElementById('chat-window');
-            chatWindow.value += `${message.handle}: ${message.msg}\n`;
+            chatWindow.value += `${message.handle || 'Me'}: ${message.msg}\n`;
           }
         } catch(e) {
           console.warn(`Could not parse message:`, e, JSON.stringify(data).slice(0, 140));
@@ -81,7 +113,6 @@
         console.error('WebRTC Error:', err);
       });
 
-      // Decode and use the signaling data received in the URL to establish connection
       try {
         const decodedData = JSON.parse(signalData);
         peer.signal(decodedData);
@@ -97,6 +128,8 @@
       const message = input.value.trim().substring(0, 140); // Limit to 140 chars
       if (message && peer) {
         peer.send(JSON.stringify({ type: 'chat', msg: message }));
+        const chatWindow = document.getElementById('chat-window');
+        chatWindow.value += `Me: ${message}\n`; // Display own messages
         input.value = '';
       }
     });

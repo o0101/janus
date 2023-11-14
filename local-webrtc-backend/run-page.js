@@ -43,6 +43,9 @@ const rl = readline.createInterface({
     }
     rl.prompt();
   });
+  page.on('pageerror', error => {
+    console.warn(`PAGE ERROR: `, error);
+  });
 
   const {
     GH_ACCESS_TOKEN, 
