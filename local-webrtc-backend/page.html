@@ -268,7 +268,7 @@
           console.log('New client connected!', ghUsername);
           inprocessConnections.delete(issueNumber);
           dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
-          dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello @${ghUsername} from my personal WebRTC "server"!`, handle: username}));
+          dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello @${ghUsername} from my personal WebRTC "server"! My blog content should have loaded below.`, handle: username}));
           dataChannel.send(JSON.stringify({type: 'blog', content: document.querySelector('section#blog').outerHTML }));
         });
 
