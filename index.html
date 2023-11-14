@@ -106,7 +106,8 @@
             window.open(issueUrl, '_blank');
           }).catch(err => {
             console.error('Could not copy signal data to clipboard:', err);
-            const chatWindow = document.querySelector('#chat-window').value = janusLink;
+            const chatWindow = document.querySelector('#chat-window');
+            chatWindow.value = janusLink;
             chatWindow.focus();
             chatWindow.select();
             try {
