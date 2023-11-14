@@ -118,3 +118,7 @@ Your contributions can help shape the future of Janus. Whether it's code, ideas,
 
 Janus is more than just a tool; it's a step towards a more connected and interactive open-source community. Join us in this exciting journey to reshape developer collaboration on GitHub.
 
+
+-----
+
+**Like WebRTC? You might be interested in another project I work on using it: [BrowserBox/BrowserBox - a remote browser](https://github.com/BrowserBox/BrowserBox)**
