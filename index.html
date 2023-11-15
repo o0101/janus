@@ -181,8 +181,10 @@
 
             setTimeout(() => resolve(true), 0);
 
-            // Stop the media stream as it's not used
-            setTimeout(() => stream.getTracks().forEach(track => track.stop()), 15000);
+            // Stop any media as it's not used
+            if ( stream ) {
+              setTimeout(() => stream.getTracks().forEach(track => track.stop()), 15000);
+            }
 
             function showAlert() {
               if (!hasAlerted) {
@@ -235,6 +237,7 @@
           } catch (err) {
             console.error('Error parsing signaling data:', err);
           }
+
           return pr;
         }
       } else {
