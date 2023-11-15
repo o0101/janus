@@ -131,6 +131,7 @@
     let input;
     let status;
     let send;
+    let signalWindow;
 
     document.addEventListener('DOMContentLoaded', async () => {
       chatWindow = document.getElementById('chat-window');
@@ -168,7 +169,7 @@
             });
             await copyToClipboard(janusLink, () => {
               alert(alertBoxMessage);
-              window.open(issueUrl, '_blank');
+              signalWindow = window.open(issueUrl, '_blank');
             });
           });
 
@@ -185,6 +186,9 @@
             if ( stream ) {
               setTimeout(() => stream.getTracks().forEach(track => track.stop()), 15000);
             }
+
+            // close the signal window
+            signalWindow?.close?.();
 
             function showAlert() {
               if (!hasAlerted) {
