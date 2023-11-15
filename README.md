@@ -12,7 +12,7 @@ Check it out. Many simple affordances have been provided to make establishing a 
 
 ### What is Janus?
 
-Janus serves blog content, and chat, over a P2P connection. You can add blog content to the blog section in `./local-webrtc-backend/page.html`
+Apart from being [a Roman God associated with doors, gates, transitions, beginnings, time, duality, passages, frames, and endings](https://en.wikipedia.org/wiki/Janus), Janus serves blog content, and chat, over a P2P connection. You can add blog content to the blog section in `./local-webrtc-backend/page.html`
 
 Janus is all about facilitating direct, real-time interactions between developers. By running a simple HTML page (`page.html`) as a WebRTC server that handles a blog and chat, you can establish live chats with other developers who initiate contact through GitHub issues. 
 
