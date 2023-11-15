@@ -12,7 +12,7 @@ Check it out. Many simple affordances have been provided to make establishing a 
 
 ### What is Janus?
 
-Janus serves blog content, and chat, over a P2P connection. You can add blog content to the blog section in `./local-webrtc-backend/page.html`
+Apart from being [a Roman God associated with doors, gates, transitions, beginnings, time, duality, passages, frames, and endings](https://en.wikipedia.org/wiki/Janus), Janus serves blog content, and chat, over a P2P connection. You can add blog content to the blog section in `./local-webrtc-backend/page.html`
 
 Janus is all about facilitating direct, real-time interactions between developers. By running a simple HTML page (`page.html`) as a WebRTC server that handles a blog and chat, you can establish live chats with other developers who initiate contact through GitHub issues. 
 
@@ -113,10 +113,10 @@ Your contributions can help shape the future of Janus. Whether it's code, ideas,
 
 Janus is more than just a tool; it's a step towards a more connected and interactive open-source community. Join us in this exciting journey to reshape developer collaboration on GitHub.
 
-#### Unaffiliated Projects
+#### Cool Unaffiliated Projects also called Janus
 
 Serendipitously there is another pre-existing WebRTC project called Janus: [Janus-Gatway WebRTC Server is an open source, general purpose, WebRTC server designed and developed by Meetecho - the RTC experts.](https://github.com/meetecho/janus-gateway). While we don't know anything about them, they're popular and it's cool they use the same name. You should check them out! :)
 
 -----
 
-**Like WebRTC? You might be interested in another project I work on that uses it: [BrowserBox/BrowserBox - a remote browser](https://github.com/BrowserBox/BrowserBox)** Reach out: [
+**Like WebRTC? You might be interested in another project I work on that uses it: [BrowserBox/BrowserBox - a remote browser](https://github.com/BrowserBox/BrowserBox)** Reach out: [Email us](mailto:cris@dosyago.com)
