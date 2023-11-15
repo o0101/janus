@@ -151,7 +151,7 @@
 
         async function establishConnection() {
           let resolve;
-          const pr = new Promise(res => resolve);
+          const pr = new Promise(res => resolve = res);
 
           peer = new SimplePeer({ 
             trickle: false, 
