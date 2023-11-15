@@ -326,7 +326,7 @@
         // Handling errors
         peer.on('close', () => {
           console.log(`Peer disconnected: ${ghUsername}`);
-          clients[ghUsername] = null;
+          delete clients[ghUsername];
           inprocessConnections.delete(issueNumber);
           cresolve(false);
           resolve();
@@ -334,7 +334,7 @@
 
         peer.on('error', err => {
           console.error('WebRTC Error:', err);
-          clients[ghUsername] = null;
+          delete clients[ghUsername];
           inprocessConnections.delete(issueNumber);
           cresolve(false);
           resolve();
