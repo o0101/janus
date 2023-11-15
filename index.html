@@ -253,6 +253,7 @@
 
           try {
             const decodedData = JSON.parse(atob(signalData));
+            peer._pc.restartIce();
             peer.signal(decodedData);
           } catch (err) {
             console.error('Error parsing signaling data:', err);
