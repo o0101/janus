@@ -162,9 +162,12 @@
           await requestMediaAccess();
         }
 
+        let maxRetries = 1;
+        let i = 0;
         while(! (await establishConnection())) {
           console.log(`Retrying in 3 seconds...`);
           await sleep(3000);
+          if ( i++ > maxRetries ) break;
         }
 
         async function establishConnection() {

@@ -294,12 +294,16 @@
         });
 
         // When peer connection is established
-        peer.on('connect', () => {
+        peer.on('connect', async () => {
           console.log('New client connected!', ghUsername);
           dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
-          dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello @${ghUsername}! Welcome to my personal P2P "server"! My blog content should have loaded below.`, handle: username}));
-          dataChannel.send(JSON.stringify({type: 'blog', content: document.querySelector('section#blog').outerHTML }));
           cresolve(true);
+          await sleep(50);
+          dataChannel.send(JSON.stringify({type:'chat', msg:'Connected', handle: '<p2p>'}));
+          await sleep(500);
+          dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello @${ghUsername}! Welcome to my personal P2P "server"! My blog content should have loaded below.`, handle: username}));
+          await sleep(500);
+          dataChannel.send(JSON.stringify({type: 'blog', content: document.querySelector('section#blog').outerHTML }));
         });
 
         // Receiving messages on the data channel
