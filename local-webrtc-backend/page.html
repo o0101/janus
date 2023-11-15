@@ -272,7 +272,7 @@
 
       async function establishConnection() {
         let cresolve;
-        const cpr = new Promise(res => cresolve);
+        const cpr = new Promise(res => cresolve = res);
         peer = new SimplePeer({ 
           initiator: true, 
           trickle: false,
