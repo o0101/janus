@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name=viewport content=width=device-width,initial-scale=1>
+  <meta name=viewport content=width=device-width,initial-scale=1,user-scalable=no>
   <link rel=icon href=./favicon.ico>
   <title>Janus - P2P Blog & Chat</title>
   <script src="https://cdn.jsdelivr.net/npm/simple-peer@9/simplepeer.min.js"></script>
@@ -106,7 +106,7 @@
   <div id="chat">
     <textarea id="chat-window" readonly></textarea>
     <div class=input-line>
-      <input required type="text" id="chat-input" placeholder="" maxlength=1024>
+      <input autofocus required type="text" id="chat-input" placeholder="" maxlength=1024>
       <button id="send-button">Send</button>
     </div>
   </div>
@@ -146,6 +146,7 @@
           peer.send(JSON.stringify({ type: 'chat', msg: message }));
           chatWindow.value += `Me: ${message}\n`; // Display own messages
           input.value = '';
+          input.focus();
         }
       });
 
