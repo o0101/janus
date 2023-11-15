@@ -147,6 +147,7 @@
           chatWindow.value += `Me: ${message}\n`; // Display own messages
           input.value = '';
           input.focus();
+          scrollToBottom(chatWindow);
         }
       });
 
@@ -208,7 +209,7 @@
 
             function showAlert() {
               if (!hasAlerted) {
-                setTimeout(() => alert('Connected'), 0);
+                setTimeout(() => alert('Connected'), 500);
                 hasAlerted = true;
               }
             }
@@ -231,6 +232,7 @@
                 document.getElementById('blog').innerHTML = message.content;
               } else if (message.type === 'chat') {
                 chatWindow.value += `${message.handle || 'Me'}: ${message.msg}\n`;
+                scrollToBottom(chatWindow);
               }
             } catch(e) {
               console.warn(`Could not parse message:`, e, JSON.stringify(data).slice(0, 140));
@@ -324,6 +326,13 @@
 
     function isSafariBrowser() {
       return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    }
+
+    function scrollToBottom(element) {
+      element.scroll({
+        top: element.scrollHeight,
+        behavior: 'smooth'
+      });
     }
 
     // this func is needed due to a quirk in mobile Safari 
