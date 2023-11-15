@@ -113,10 +113,10 @@ Your contributions can help shape the future of Janus. Whether it's code, ideas,
 
 Janus is more than just a tool; it's a step towards a more connected and interactive open-source community. Join us in this exciting journey to reshape developer collaboration on GitHub.
 
-#### Unaffiliated Projects
+#### Cool Unaffiliated Projects also called Janus
 
 Serendipitously there is another pre-existing WebRTC project called Janus: [Janus-Gatway WebRTC Server is an open source, general purpose, WebRTC server designed and developed by Meetecho - the RTC experts.](https://github.com/meetecho/janus-gateway). While we don't know anything about them, they're popular and it's cool they use the same name. You should check them out! :)
 
 -----
 
-**Like WebRTC? You might be interested in another project I work on that uses it: [BrowserBox/BrowserBox - a remote browser](https://github.com/BrowserBox/BrowserBox)** Reach out: [
+**Like WebRTC? You might be interested in another project I work on that uses it: [BrowserBox/BrowserBox - a remote browser](https://github.com/BrowserBox/BrowserBox)** Reach out: [Email us](mailto:cris@dosyago.com)
