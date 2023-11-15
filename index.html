@@ -124,7 +124,7 @@
     const urlParams = new URL(location).searchParams;
     const signalData = urlParams.get('data');
     const issueUrl = urlParams.get('issue');
-    const alertBoxMessage = `Your p2p locator is now in your clipboard.\n\nWhen you close this dialog we will return you to the issue you came from. Please paste your locator into a new comment on that issue, then post that comment.\n\nPlease note: if you close this chat page you will end the p2p connection.`;
+    const alertBoxMessage = `Your p2p locator is now in your clipboard. Paste it into the comment on the issue.\n\nWhen you close this dialog we will return you to the issue.\n\nPlease note: if you close this chat page you will end the p2p connection.`;
     let peer;
     let stream;
     let chatWindow;
