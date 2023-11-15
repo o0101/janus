@@ -139,7 +139,7 @@
                 await beginConnectionProcess(postComment, ghUsername, issue.number); // Open new connection
               } else {
                 console.log(`Not accepting a chat from banned user: ${ghUsername}`);
-                closeIssue(issue.number, repoUrl, accessToken, 'Sorry we can\'t server your request right now');
+                closeIssue(issue.number, repoUrl, accessToken, 'Sorry we can\'t serve your request right now');
               }
             } else {
               DEBUG.verbose && console.log(`Connection is already in process via #${issue.number}`);
