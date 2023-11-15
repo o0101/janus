@@ -140,6 +140,21 @@
       progressBar = document.querySelector('.progress-bar');
       send = document.getElementById('send-button');
 
+      send.addEventListener('click', () => {
+        const message = input.value.trim().substring(0, 1024); // Limit to 1024 chars
+        if (message && peer) {
+          peer.send(JSON.stringify({ type: 'chat', msg: message }));
+          chatWindow.value += `Me: ${message}\n`; // Display own messages
+          input.value = '';
+        }
+      });
+
+      input.addEventListener('keypress', pressed => {
+        if ( pressed.key == "Enter" ) {
+          send.click();
+        }
+      });
+
       if (signalData) {
         if ( isSafariBrowser() ) {
           await requestMediaAccess();
@@ -247,21 +262,6 @@
       } else {
         console.error('No signaling data found in URL.');
       }
-
-      send.addEventListener('click', () => {
-        const message = input.value.trim().substring(0, 1024); // Limit to 1024 chars
-        if (message && peer) {
-          peer.send(JSON.stringify({ type: 'chat', msg: message }));
-          chatWindow.value += `Me: ${message}\n`; // Display own messages
-          input.value = '';
-        }
-      });
-
-      input.addEventListener('keypress', pressed => {
-        if ( pressed.key == "Enter" ) {
-          send.click();
-        }
-      });
     });
 
     async function copyToClipboard(text, onSuccess) {
