@@ -299,7 +299,7 @@
           dataChannel = peer; // In SimplePeer, peer itself acts as a data channel
           cresolve(true);
           await sleep(50);
-          dataChannel.send(JSON.stringify({type:'chat', msg:'Connected', handle: '<p2p>'}));
+          dataChannel.send(JSON.stringify({type:'chat', msg:'Connected', handle: '<janus p2p>'}));
           await sleep(500);
           dataChannel.send(JSON.stringify({type: 'chat', msg: `Hello @${ghUsername}! Welcome to my personal P2P "server"! My blog content should have loaded below.`, handle: username}));
           await sleep(500);
