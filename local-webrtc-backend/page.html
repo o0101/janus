@@ -60,7 +60,7 @@
     const repoUrl = ghCreds.REPO_URL;
     const inprocessConnections = new Map();
     const DEBUG = {
-      verbose: true,
+      verbose: false,
     };
     const [ username, repoName ] = new URL(repoUrl).pathname.split('/').filter(part => part.length);
     const banList = new Set();
